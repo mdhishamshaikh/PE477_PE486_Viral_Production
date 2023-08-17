@@ -23,8 +23,7 @@ packages_to_load <- c("tidyverse",
                       "readxl",
                       "ggcyto",
                       "ggsci",
-                      "svglite",
-                      "here")
+                      "svglite")
 
 # Call the function with the list of packages
 install_and_load_packages(packages_to_load)
@@ -33,12 +32,14 @@ install_and_load_packages(packages_to_load)
 
 
 #2.0 Setting up directories for data, metadata, results, and reference files####
-set_up_vp_count<- function(project_title = "Project"){
+set_up_vp_count<- function(){
+  
+
   { #create directories
     dir_to_create<- c("/data", "/results", "/data/raw_data", 
                       "/data/metadata", "/data/ref_fcs")
     
-    dir_to_create <- paste0(getwd(), "/", project_title, dir_to_create)
+    dir_to_create <- paste0(work_dir, dir_to_create)
     
     
     # Create the directories if they don't already exist
@@ -49,8 +50,8 @@ set_up_vp_count<- function(project_title = "Project"){
         cat("Directory", dir, "already exists.\n")
       }
     }
-    .GlobalEnv$work_dir <- paste0(getwd(),"/",project_title,"/")
-    
+    .GlobalEnv$work_dir <- paste0(getwd(), "/", project_title)
+   
     rm(dir_to_create)    
         
   }
@@ -76,7 +77,7 @@ metadata_processing<- function(file_path, extension = ".xlsx", sheet =NULL, proj
     mutate(Date_Measurement= as.Date(as.character(Date_Measurement), format))
   .GlobalEnv$metadata<- metadata
   
-  write.csv(metadata, paste0(project_title, "/data/metadata/",project_title,"_metadata.csv"), row.names=F)
+  write.csv(metadata, file = paste0(work_dir, "./data/metadata/",project_title,"_metadata.csv"), row.names=F)
   print("Metadata processed and stored under `data/metadata`")
   return(metadata)
   
@@ -84,6 +85,7 @@ metadata_processing<- function(file_path, extension = ".xlsx", sheet =NULL, proj
 }
 
 
+##Import doesn't work
 
 import_fcs<- function(fcs_dir, project_title = "Project", ...){
   
@@ -91,13 +93,13 @@ import_fcs<- function(fcs_dir, project_title = "Project", ...){
   
   print("It'll take some time before all the files are transferred")
   file.copy(from = paste0(fcs_dir2, metadata$Sample_Name),
-            to = "/data/raw_data/",
+            to = paste0(work_dir, "/data/raw_data/"),
             recursive = T)
   }
-  if( "FALSE" %in% (metadata$Sample_Name %in% list.files("/data/raw_data/"))) { #files are missing in the raw_data folder
+  if( "FALSE" %in% (metadata$Sample_Name %in% list.files("./data/raw_data/"))) { #files are missing in the raw_data folder
     print("Missing files. Check `missing_fcs_file`")
-    print(setdiff(metadata$Sample_Name,list.files("/data/raw_data/")))#what to do with the missing files
-    missing_fcs_file<- setdiff(metadata$Sample_Name,list.files("/data/raw_data/"))
+    print(setdiff(metadata$Sample_Name,list.files("./data/raw_data/")))#what to do with the missing files
+    missing_fcs_file<- setdiff(metadata$Sample_Name,list.files("./data/raw_data/"))
     .GlobalEnv$missing_fcs_file <- missing_fcs_file
   } else {
     print("All files were transferred.")
@@ -215,7 +217,7 @@ get_bv_stats<- function(df = metadata, gate = "same", write_csv = T, test = F, .
     df<- df
   }
   
-  setwd(work_dir)
+  
   if (write_csv == T){
     #create a csv file to store all the plots
     x<-data.frame(file_name = "file_name", pop = "pop", count = "count")
