@@ -1,0 +1,3 @@
+
+PE_Cruises/data/raw_data/*
+Data/

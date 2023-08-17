@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+
+
+PE_Cruises/data/raw_data/*
+Data/
