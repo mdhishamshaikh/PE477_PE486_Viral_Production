@@ -89,17 +89,19 @@ metadata_processing<- function(file_path, extension = ".xlsx", sheet =NULL, proj
 
 import_fcs<- function(fcs_dir, project_title = "Project", ...){
   
-  for (fcs_dir2 in fcs_dir){
   
   print("It'll take some time before all the files are transferred")
-  file.copy(from = paste0(fcs_dir2, metadata$Sample_Name),
-            to = paste0(work_dir, "/data/raw_data/"),
-            recursive = T)
+  for (sample in  1:length(metadata$Sample_Name)){
+    file_source<- paste0(fcs_dir, metadata$Sample_Name[sample])
+    file_dest <-  paste0(work_dir, "/data/raw_data")
+    file.copy(from = file_source,
+            to = file_dest,
+            recursive = F)
   }
-  if( "FALSE" %in% (metadata$Sample_Name %in% list.files("./data/raw_data/"))) { #files are missing in the raw_data folder
+  if( "FALSE" %in% (metadata$Sample_Name %in% list.files("/data/raw_data/"))) { #files are missing in the raw_data folder
     print("Missing files. Check `missing_fcs_file`")
-    print(setdiff(metadata$Sample_Name,list.files("./data/raw_data/")))#what to do with the missing files
-    missing_fcs_file<- setdiff(metadata$Sample_Name,list.files("./data/raw_data/"))
+    print(setdiff(metadata$Sample_Name,list.files("/data/raw_data/")))#what to do with the missing files
+    missing_fcs_file<- setdiff(metadata$Sample_Name,list.files("/data/raw_data/"))
     .GlobalEnv$missing_fcs_file <- missing_fcs_file
   } else {
     print("All files were transferred.")
@@ -111,11 +113,11 @@ import_fcs<- function(fcs_dir, project_title = "Project", ...){
 ref_fcs_create<- function(ref_fcs_file){
   
   
-  file.copy(from = paste0(work_dir,"data/raw_data/", ref_fcs_file),
-            to = paste0(work_dir,"data/ref_fcs"))
-  file.rename(from = paste0(work_dir,"data/ref_fcs/", ref_fcs_file),
-              to = paste0(work_dir,"data/ref_fcs/", ref_fcs_file,"_ref"))
-  ref_fcs<- paste0(work_dir, "data/ref_fcs/", ref_fcs_file, "_ref")
+  file.copy(from = paste0(work_dir,"/data/raw_data/", ref_fcs_file),
+            to = paste0(work_dir,"/data/ref_fcs"))
+  file.rename(from = paste0(work_dir,"/data/ref_fcs/", ref_fcs_file),
+              to = paste0(work_dir,"/data/ref_fcs/", ref_fcs_file,"_ref"))
+  ref_fcs<- paste0(work_dir, "/data/ref_fcs/", ref_fcs_file, "_ref")
   
   .GlobalEnv$ref_fcs<- ref_fcs
   print("Reference FCS file was created and is stored as:")
@@ -311,28 +313,23 @@ get_bv_plots<- function(df = metadata, gate = "same", write_pdf = T, test = F, .
   
   
   #create a PDF file to store all the plots
-  if ("project_title" %in% ls(.GlobalEnv) == T){
-    pdf(paste0("./results/",project_title,"_plots.pdf"), onefile =T)
-    print(paste0("./results/",project_title,"_plots.pdf created"))
-  } else{
-    pdf("./results/plots.pdf", onefile =T)
-    print("./results/plots.pdf created")
-  }
+  
+    pdf(paste0(work_dir,"/results/",project_title,"_plots.pdf"), onefile =T)
+    print(paste0(work_dir, "/results/",project_title,"_plots.pdf created"))
+  
+     
   if (write_pdf == T){
     
-    if ("project_title" %in% ls(.GlobalEnv) == T){
+    
       if(test == T){
         .GlobalEnv$project_title2<- paste0(project_title, "_test")
       }else if(test == F){ 
         .GlobalEnv$project_title2<- project_title
       }
-      pdf(paste0("./results/",project_title2,"_plots.pdf"), onefile =T)
-      print(paste0("./results/",project_title2,"_plots.pdf created"))
+      pdf(paste0(work_dir,"/results/",project_title2,"_plots.pdf"), onefile =T)
+      print(paste0(work_dir,"/results/",project_title2,"_plots.pdf created"))
       
-    } else{
-      pdf("./results/plots.pdf", onefile =T)
-      print("./results/plots.pdf created")
-    }
+     
   }
   
   t<-0 #counter to 0
@@ -346,7 +343,7 @@ get_bv_plots<- function(df = metadata, gate = "same", write_pdf = T, test = F, .
     
     print(df$Sample_Name[i])
     
-    .GlobalEnv$fcs_data<- paste0(paste0(work_dir,"data/raw_data/", fcs_file))
+    .GlobalEnv$fcs_data<- paste0(paste0(work_dir,"/data/raw_data/", fcs_file))
     
     p[[i]]<- list()
     p[[i]]<- try(read_transform_fs_bv(fcs_data)  %>%
@@ -362,6 +359,7 @@ get_bv_plots<- function(df = metadata, gate = "same", write_pdf = T, test = F, .
   rm(t)
   graphics.off()
 }
+
 
 
 
