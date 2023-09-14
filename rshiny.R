@@ -12,7 +12,7 @@ ui <- fluidPage(
   titlePanel("Flow Cytometry Gating with ggcyto"),
   sidebarLayout(
     sidebarPanel(
-      fileInput("fcs_file", "Choose FCS File",
+      fileInput("file_index", "Choose FCS File",
                 multiple = FALSE,
                 accept = c(".fcs")),
       actionButton("plot_btn", "Plot FCS Data")
@@ -25,10 +25,10 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   observeEvent(input$plot_btn, {
-    req(input$fcs_file)
+    req(input$file_index)
     
     # Read FCS file
-    fr <- read.FCS(input$fcs_file$datapath)
+    fr <- read.FCS(input$file_index$datapath)
     
     # Using ggcyto for basic visualization
     ref_fcs_create("vi201130.062")
@@ -67,7 +67,7 @@ ui <- fluidPage(
   titlePanel("Flow Cytometry Gating with ggcyto"),
   sidebarLayout(
     sidebarPanel(
-      fileInput("fcs_file", "Choose FCS File",
+      fileInput("file_index", "Choose FCS File",
                 multiple = FALSE,
                 accept = c(".fcs")),
       numericInput("bins", "Number of Bins:", value = 100, min = 10, max = 1000),
@@ -81,10 +81,10 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   observeEvent(input$plot_btn, {
-    req(input$fcs_file)
+    req(input$file_index)
     
     # Read and transform FCS file
-    fs <- read_transform_fs_bv(input$fcs_file$datapath)
+    fs <- read_transform_fs_bv(input$file_index$datapath)
     
     # Use only the latest file for visualization
     fr <- fs[[length(fs)]]
@@ -121,7 +121,7 @@ ui <- fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      fileInput("fcs_file", "Choose FCS File",
+      fileInput("file_index", "Choose FCS File",
                 multiple = FALSE,
                 accept = c(".fcs")),
       numericInput("bins", "Number of Bins:", value = 64, min = 10, max = 1000),
@@ -135,10 +135,10 @@ ui <- fluidPage(
 
 server <- function(input, output) {
   observeEvent(input$plot_btn, {
-    req(input$fcs_file)
+    req(input$file_index)
     
     # Read and transform FCS file
-    fs <- read_transform_fs_bv(input$fcs_file$datapath)
+    fs <- read_transform_fs_bv(input$file_index$datapath)
     fr <- fs[[length(fs)]]
     
     # Main scatter plot
@@ -509,3 +509,173 @@ server <- function(input, output) {
 
 shinyApp(ui, server)
 
+
+#ATTEMPT 8####
+
+library(shiny)
+library(ggplot2)
+library(ggcyto)
+library(flowCore)
+library(tidyverse)
+
+read_transform_fs_bv <- function(x) {
+  flowCore::read.flowSet(c(x, x)) %>%
+    flowCore::transform(translist_bv)
+}
+
+rect_names <- c('Total Bacteria', 'HNA Bacteria', 'LNA Bacteria', 'Total Viruses', 'V1 Viruses', 'V2 Viruses', 'V3 Viruses')
+rect_colors <- c('red', 'blue', 'green', 'purple', 'orange', 'cyan', 'pink')
+
+ui <- fluidPage(
+  titlePanel("Gating FCM files for bacteria and viruses"),
+  
+  # Input for selecting sample based on Sample_Name from metadata
+  selectInput("selected_sample", "Select Sample", choices = NULL),
+  
+  sidebarLayout(
+    sidebarPanel(
+      
+      shinyFiles::shinyDirButton("dir", "Choose a directory", "Please select a directory", FALSE),
+      
+      # Select index of filename based on Sample_Name column
+      selectInput("file_index", "Select File:", choices = .GlobalEnv$metadata$Sample_Name),
+      
+      # Display filename
+      textOutput("display_filename"),
+      numericInput("bins", "Number of bins:", value = 30, min = 1),
+      downloadButton("downloadData", "Download Coordinates"),
+      overflowY = "scroll",
+      lapply(1:length(rect_names), function(i) {
+        tagList(
+          h4(rect_names[i]),
+          div(style = "font-size: 80%;", 
+              numericInput(paste0("x1_", i), "Top-left X:", 1, width = "45%"),
+              numericInput(paste0("y1_", i), "Top-left Y:", 1, width = "45%"),
+              numericInput(paste0("x2_", i), "Bottom-right X:", 5, width = "45%"),
+              numericInput(paste0("y2_", i), "Bottom-right Y:", 5, width = "45%"),
+              actionButton(paste0("drawBtn_", i), "Draw"),
+              actionButton(paste0("resetBtn_", i), "Reset")
+          ),
+          br()
+        )
+      })
+    ),
+    mainPanel(
+      fixedPanel(
+        plotOutput("plotRectangles", width = "100%", height = "auto")
+      )
+    )
+  )
+)
+
+server <- function(input, output) {
+  
+  coordinates_df <- reactiveVal(data.frame())
+  
+  gsbv_fs <- reactive({
+    req(input$file_index)
+    
+    file_path <- file.path(global$datapath, input$file_index)
+    
+    read_transform_fs_bv(file_path)
+  })
+  
+  rect_list <- reactiveVal(vector("list", length(rect_names)))
+  
+  lapply(1:length(rect_names), function(i) {
+    observeEvent(input[[paste0("drawBtn_", i)]], {
+      rects <- rect_list()
+      rects[[i]] <- list(
+        x1 = input[[paste0("x1_", i)]],
+        y1 = input[[paste0("y1_", i)]],
+        x2 = input[[paste0("x2_", i)]],
+        y2 = input[[paste0("y2_", i)]],
+        col = rect_colors[i]
+      )
+      rect_list(rects)
+      
+      current_data <- data.frame(
+        sample_name = basename(input$file_index$name)
+      )
+      for (idx in 1:length(rects)) {
+        rect = rects[[idx]]
+        current_data[paste0(rect_names[idx], "_x1")] = rect$x1
+        current_data[paste0(rect_names[idx], "_y1")] = rect$y1
+        current_data[paste0(rect_names[idx], "_x2")] = rect$x2
+        current_data[paste0(rect_names[idx], "_y2")] = rect$y2
+      }
+      coordinates_df(current_data)
+    })
+  })
+  
+  output$plotRectangles <- renderPlot({
+    req(gsbv_fs())
+    
+    p <- ggcyto::ggcyto(gsbv_fs()[[2]], aes(x = `SSC-H`, y = `FL1-H`), subset = "root") +
+      geom_hex(bins = input$bins) +  
+      theme_bw() +
+      labs(title = basename(input$file_index$name), x = "SSC-H (Side scatter (a.u.))", y = "FL1-H (Green Fluorescence (a.u.))") +
+      theme(axis.text = element_text(size = 12),
+            axis.title = element_text(size = 12),
+            strip.background = element_rect(colour="white", fill="white"),
+            panel.border = element_rect(colour = "white"))
+    
+    rects <- rect_list()
+    for (rect in rects) {
+      if (!is.null(rect$x1) && !is.null(rect$y1) && !is.null(rect$x2) && !is.null(rect$y2)) {
+        p <- p + geom_rect(xmin = rect$x1, xmax = rect$x2, ymin = rect$y1, ymax = rect$y2, color = rect$col, fill = NA)
+      }
+    }
+    
+    return(p)
+  })
+  
+  output$downloadData <- downloadHandler(
+    filename = function() {
+      paste("coordinates-", Sys.Date(), ".csv", sep="")
+    },
+    content = function(file) {
+      write.csv(coordinates_df(), file, row.names = FALSE)
+    }
+  )
+  
+  
+  
+  shinyFiles::shinyDirChoose(
+    input,
+    'dir',
+    roots = c(home = '~'),
+    filetypes = c('', 'fcs', "csv", "bw")
+  )
+  
+  global <- reactiveValues(datapath = paste0(getwd(), "/", project_title, "/data/raw_data/", metadata$Sample_Name[input$file_index])
+                           )
+  
+  dir <- reactive(input$dir)
+  
+  output$dir <- renderText({
+    global$datapath
+  })
+  
+  
+  observe({
+    # This should only be done after metadata is available.
+    updateSelectInput(session, "file_index", choices = metadata$Sample_Name)
+  })
+  
+  observeEvent(input$dir, {
+    req(input$dir)  # ensure 'dir' input is provided
+    directoryPath <- parseDirPath(c(home = '~'), input$dir)
+    
+    # Check if directory exists
+    if (dir.exists(directoryPath)) {
+      setwd(directoryPath)
+      global$datapath <- normalizePath(directoryPath)
+    } else {
+      showNotification("Directory does not exist!", type = "error")
+    }
+  })
+  
+}
+
+shinyApp(ui, server)

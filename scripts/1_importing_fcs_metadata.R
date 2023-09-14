@@ -24,7 +24,7 @@ project_title<- "PE_Cruises"
 # Define the working directory `work_dir`.\
 # This could be done by using `getwd()` function.\
 
-work_dir<- paste0(getwd(), "/", project_title)
+work_dir<- paste0(getwd(), "/", project_title, "/")
 
 
 # **2. Setting up environment**\
@@ -121,9 +121,9 @@ import_matching_files <- function(source_dir, dest_dir, metadata) {
   }
 }
 
-working_directory <- "C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production"
-source_directory <- "C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/Data"
-destination_directory <- "C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/PE_Cruises/data/raw_data"
+working_directory <- "C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/"
+source_directory <- "C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/Data/"
+destination_directory <- "C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/PE_Cruises/data/raw_data/"
 
 
 
@@ -202,7 +202,7 @@ v_ssc = c(0.6, 3.5)
 v_fl1 = c(-0.1, 1.7)
 hna_ssc = c(0.6, 3.5)
 hna_fl1 = c(2.15, 3.5)
-lna_ssc = c(1.0, 3.5),
+lna_ssc = c(1.0, 3.5)
 lna_fl1 = c(1.5, 2.15)
 v1_ssc = c(-0.1, 0.90)
 v1_fl1 = c(-0.1, 0.8)
@@ -239,3 +239,14 @@ tib<- tibble(
 get_bv_plots()
 
 get_bv_stats()
+
+
+
+
+##### plot for shiny
+
+read_transform_fs_bv <- function(x){ #function to read and transform fcs files
+  flowCore::read.flowSet(c(x, x)) %>%
+    flowCore::transform(translist_bv)
+  
+}
