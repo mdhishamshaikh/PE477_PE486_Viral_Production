@@ -73,7 +73,8 @@ metadata_processing<- function(file_path, extension = ".xlsx", sheet =NULL, proj
                           'Location', 'Expt_Date', 'Expt_No', 'Depth', 
                           'Sample_Type', 'Timepoint', 'Replicate', 'Acquisition_Duration',
                           'Dilution', 'Flowrate')] %>%
-    mutate(Expt_Date = as.Date(as.character(Expt_Date), format)) %>% #converting Expt_Date and Date_Measurement into Date format
+    mutate(Sample_Index = row_number(),
+           Expt_Date = as.Date(as.character(Expt_Date), format)) %>% #converting Expt_Date and Date_Measurement into Date format
     mutate(Date_Measurement= as.Date(as.character(Date_Measurement), format))
   .GlobalEnv$metadata<- metadata
   
@@ -108,6 +109,134 @@ import_fcs<- function(fcs_dir, project_title = "Project", ...){
   }
   fcs_data<- paste0(work_dir,"/data/raw_data/", 
                     list.files(paste0(work_dir, "/data/raw_data/")))
+}
+
+
+
+
+populate_gate_df <- function(range1 = r1, range2 = r2,
+                             g2_b_ssc = b_ssc, g2_b_fl1 = b_fl1, 
+                             g2_v_ssc = v_ssc, g2_v_fl1 = v_fl1, 
+                             g2_hna_ssc = hna_ssc, g2_hna_fl1 = hna_fl1, 
+                             g2_lna_ssc = lna_ssc, g2_lna_fl1 = lna_fl1, 
+                             g2_v1_ssc = v1_ssc, g2_v1_fl1 = v1_fl1, 
+                             g2_v2_ssc = v2_ssc, g2_v2_fl1 = v2_fl1, 
+                             g2_v3_ssc = v3_ssc, g2_v3_fl1 = v3_fl1,
+                             all_right_by = 0, all_left_by = 0,
+                             all_higher_by = 0, all_lower_by = 0) {
+  
+  
+  gate_df<- data.frame(matrix(ncol = 16, nrow = nrow(metadata)))
+  gate_df[,1:2]<- metadata[,c('Sample_Index', 'Sample_Name')]
+  
+  colname<- c("Sample_Index", "Sample_Name",
+              "g_b_ssc", "g_b_fl1",
+              "g_v_ssc", "g_v_fl1",
+              "g_hna_ssc", "g_hna_fl1",
+              "g_lna_ssc", "g_lna_fl1",
+              "g_v1_ssc", "g_v1_fl1",
+              "g_v2_ssc", "g_v2_fl1",
+              "g_v3_ssc", "g_v3_fl1")
+  colnames(gate_df)<- colname
+  
+  
+  for(col in colname[-c(1:2)]) {
+    gate_df[[col]] <- vector("list", nrow(gate_df))
+  }
+  
+  
+  #Range of samples to update
+  rows_to_update <- which(gate_df$Sample_Index %in% range1:range2)
+  
+  adjssc <- 0
+  adjfl1 <- 0 
+  
+  adj_args <- list(all_right_by = all_right_by, 
+                   all_left_by = all_left_by, 
+                   all_higher_by = all_higher_by, 
+                   all_lower_by = all_lower_by)
+  
+  for (var_name in names(adj_args)) {
+    cat("Variable", var_name, "has value:", adj_args[[var_name]], "\n")
+    
+    if (var_name == "all_right_by") {
+      cat("All SSC coordinates were adjusted to the right by", adj_args[[var_name]], "\n")
+      adjssc <- adjssc + adj_args[[var_name]]
+    } 
+    
+    if (var_name == "all_left_by") {
+      cat("All SSC coordinates were adjusted to the left by", adj_args[[var_name]], "\n")
+      adjssc <- adjssc - adj_args[[var_name]]
+    } 
+    
+    if (var_name == "all_higher_by") {
+      cat("All FL1 coordinates were adjusted higher by", adj_args[[var_name]], "\n")
+      adjfl1 <- adjfl1 + adj_args[[var_name]]
+    } 
+    
+    if (var_name == "all_lower_by") {
+      cat("All FL1 coordinates were adjusted lower by", adj_args[[var_name]], "\n")
+      adjfl1 <- adjfl1 - adj_args[[var_name]]
+    } 
+  }
+  
+  gate_df[rows_to_update, ] <- gate_df[rows_to_update, ] %>%
+    mutate(
+      g_b_ssc = list(list(g2_b_ssc + adjssc)),
+      g_b_fl1 = list(list(g2_b_fl1 + adjfl1)),
+      g_v_ssc = list(list(g2_v_ssc + adjssc)),
+      g_v_fl1 = list(list(g2_v_fl1 + adjfl1)),
+      g_hna_ssc = list(list(g2_hna_ssc + adjssc)),
+      g_hna_fl1 = list(list(g2_hna_fl1 + adjfl1)),
+      g_lna_ssc = list(list(g2_lna_ssc + adjssc)),
+      g_lna_fl1 = list(list(g2_lna_fl1 + adjfl1)),
+      g_v1_ssc = list(list(g2_v1_ssc + adjssc)),
+      g_v1_fl1 = list(list(g2_v1_fl1 + adjfl1)),
+      g_v2_ssc = list(list(g2_v2_ssc + adjssc)),
+      g_v2_fl1 = list(list(g2_v2_fl1 + adjfl1)),
+      g_v3_ssc = list(list(g2_v3_ssc + adjssc)),
+      g_v3_fl1 = list(list(g2_v3_fl1 + adjfl1))
+    )
+  
+  gate_df<<- gate_df
+  return(gate_df)
+}
+
+gates<- function(){
+  
+  
+  
+  polycut<- matrix(c(gate_df$g_b_ssc[i][[1]][[1]], gate_df$g_b_fl1[i][[1]][[1]]), 
+                   nrow = length(gate_df$g_b_ssc[i][[1]][[1]]), 
+                   ncol=2)
+  colnames(polycut)<- c("SSC-H", "FL1-H")
+  bgate<- polygonGate(.gate = polycut, filterId = "Bacteria" )
+  vgate<- rectangleGate(filterId= "Viruses", 
+                        "SSC-H" = gate_df$g_v_ssc[i][[1]][[1]], 
+                        "FL1-H" = gate_df$g_v_fl1[i][[1]][[1]]) 
+  
+  HNA_Bacteria_bv<- rectangleGate(filterId="HNA_Bacteria", 
+                                  "SSC-H" = gate_df$g_hna_ssc[i][[1]][[1]], 
+                                  "FL1-H" = gate_df$g_hna_fl1[i][[1]][[1]]) 
+  LNA_Bacteria_bv<- rectangleGate(filterId="LNA_Bacteria", 
+                                  "SSC-H" = gate_df$g_lna_ssc[i][[1]][[1]], 
+                                  "FL1-H" = gate_df$g_lna_fl1[i][[1]][[1]]) 
+  
+  #same viral gates as we don't utilise the viral info from bacterial samples
+  v1<- rectangleGate(filterId="V1", 
+                     "SSC-H" = gate_df$g_v1_ssc[i][[1]][[1]], 
+                     "FL1-H" = gate_df$g_v1_fl1[i][[1]][[1]])  
+  v2<- rectangleGate(filterId="V2", 
+                     "SSC-H" = gate_df$g_v2_ssc[i][[1]][[1]], 
+                     "FL1-H" = gate_df$g_v2_fl1[i][[1]][[1]]) 
+  v3<- rectangleGate(filterId="V3", 
+                     "SSC-H" = gate_df$g_v3_ssc[i][[1]][[1]], 
+                     "FL1-H" = gate_df$g_v3_fl1[i][[1]][[1]]) 
+  
+  detectors<- c("FSC-H", "SSC-H", "FL1-H", "FL2-H", "FL3-H")
+  
+  translist_bv<- transformList(detectors, logTransform())
+  
 }
 
 ref_fcs_create<- function(ref_fcs_file){
@@ -251,11 +380,11 @@ get_bv_stats<- function(df = metadata, gate = "same", write_csv = T, test = F, .
     .GlobalEnv$i<- i
     .GlobalEnv$fcs_file<- df$Sample_Name[i]
     
-    bacterial_gate(fcs_file = fcs_file)
-    
+    gates()
     print(df$Sample_Name[i])
     
     .GlobalEnv$fcs_data<- paste0(work_dir,"data/raw_data/", fcs_file)
+    
     
     
     try(read_transform_fs_bv(fcs_data)  %>%

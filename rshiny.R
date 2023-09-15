@@ -538,7 +538,8 @@ ui <- fluidPage(
       shinyFiles::shinyDirButton("dir", "Choose a directory", "Please select a directory", FALSE),
       
       # Select index of filename based on Sample_Name column
-      selectInput("file_index", "Select File:", choices = .GlobalEnv$metadata$Sample_Name),
+      selectInput("file_index", "Select File:", choices = NULL),
+      
       
       # Display filename
       textOutput("display_filename"),
@@ -575,7 +576,7 @@ server <- function(input, output) {
   gsbv_fs <- reactive({
     req(input$file_index)
     
-    file_path <- file.path(global$datapath, input$file_index)
+    file_path <- file.path(getwd(), "data", "raw_data", global$metadata$Sample_Name[input$file_index])
     
     read_transform_fs_bv(file_path)
   })
@@ -648,8 +649,9 @@ server <- function(input, output) {
     filetypes = c('', 'fcs', "csv", "bw")
   )
   
-  global <- reactiveValues(datapath = paste0(getwd(), "/", project_title, "/data/raw_data/", metadata$Sample_Name[input$file_index])
-                           )
+  global <- reactiveValues(datapath = NULL, metadata = metadata)
+  
+  
   
   dir <- reactive(input$dir)
   
@@ -657,11 +659,11 @@ server <- function(input, output) {
     global$datapath
   })
   
-  
   observe({
-    # This should only be done after metadata is available.
-    updateSelectInput(session, "file_index", choices = metadata$Sample_Name)
+    updateSelectInput(session, "file_index", choices = global$metadata$Sample_Name)
+    
   })
+  
   
   observeEvent(input$dir, {
     req(input$dir)  # ensure 'dir' input is provided
@@ -679,3 +681,4 @@ server <- function(input, output) {
 }
 
 shinyApp(ui, server)
+

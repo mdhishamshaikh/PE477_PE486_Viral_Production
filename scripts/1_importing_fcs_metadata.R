@@ -50,15 +50,15 @@ metadata_processing(paste0(getwd(),"/Metadata/PE_Cruises_VP_Metadata.xlsx"), ext
 # **4. Importing FCS files**\
 # We can utilize the `Sample_Name` variable in the `metadata` file to copy files for analyses.\
 # We need to provide the origin of these FCS files. Files will be copied to `./data/raw_data`.\
-
-source_file_name <- metadata$Sample_Name[1]
-source_file_path <- file.path("C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/Data/", source_file_name)
-
-if (file.exists(source_file_path)) {
-  cat("Source file exists.\n")
-} else {
-  cat("Source file does not exist.\n")
-}
+# 
+# source_file_name <- metadata$Sample_Name[1]
+# source_file_path <- file.path("C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/PE_Cruises/data/raw_data", source_file_name)
+# 
+# if (file.exists(source_file_path)) {
+#   cat("Source file exists.\n")
+# } else {
+#   cat("Source file does not exist.\n")
+# }
 
 
 for (sample in 1:length(metadata$Sample_Name)){
@@ -81,6 +81,9 @@ for (sample in seq_along(metadata$Sample_Name)) {
     missing_fcs_file <- c(missing_fcs_file, metadata$Sample_Name[sample])
   }
 }
+
+
+
 if (length(missing_fcs_file) > 0) {
   print("Missing files. Check `missing_fcs_file`")
   print(missing_fcs_file)
@@ -88,13 +91,6 @@ if (length(missing_fcs_file) > 0) {
   print("All files were transferred.")
 }
 
-fcs_data <- list.files(file.path(work_dir, "data/raw_data"))
-
-return(list(fcs_data = fcs_data, missing_fcs_file = missing_fcs_file))
-}
-import_fcs(origin)
-
-wafile.exists("C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/PE_Cruises/data/raw_data/vi201123.059")
 
 
 
@@ -131,8 +127,50 @@ destination_directory <- "C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477
 import_matching_files(source_dir = source_directory, dest_dir = destination_directory, metadata = metadata)
 
 
-ref_fcs_create("vi201130.062")
-project_title<- "PE_Cruises_2"
+#ref_fcs_create("vi201130.062")
+
+
+#### Gating ####
+
+#Let's populate the gating dataframe with default values.
+#The default gating values
+
+{
+r1<- 1 #range start
+r2<- length(metadata$Sample_Index) #range end. For the entire dataframe
+
+metadata = metadata
+b_ssc = c(1.1, 2.0, 2.5, 3.2, 3.7, 3.7, 2.0, 0.6)
+b_fl1 = c(1.9, 1.5, 1.5, 1.8, 2.8, 3.7, 3.2, 2.75)
+v_ssc = c(0.6, 3.5)
+v_fl1 = c(-0.1, 1.7)
+hna_ssc = c(0.6, 3.5)
+hna_fl1 = c(2.15, 3.5)
+lna_ssc = c(1.0, 3.5)
+lna_fl1 = c(1.5, 2.15)
+v1_ssc = c(-0.1, 0.90)
+v1_fl1 = c(-0.1, 0.8)
+v2_ssc = c(-0.1, 0.90)
+v2_fl1 = c(0.8, 1.25)
+v3_ssc = c(-0.1, 1.3)
+v3_fl1 = c(1.25, 1.7)
+}
+
+
+populate_gate_df() #This creates a default gating dataframe for all your samples.
+#Now let's evaluate how it performs on our samples
+
+#We always only start with plots
+
+get_bv_plots()
+
+#As we see that gates dont fit all samples the same, we'll have to change the gating coordinates.
+#You can use populate_gate_df fucntion to do so
+
+
+
+
+
 
 #This is already in the source script, but if you want to adjust, you can do it here.
 {
@@ -172,28 +210,52 @@ project_title<- "PE_Cruises_2"
   translist_bv<- transformList(detectors, logTransform())
 }
 
-gate_df<- data.frame(matrix(ncol = 29, nrow = nrow(metadata) ))
-gate_df[,1]<- metadata[,1]
 
-colnames(gate_df)<- c("Sample_Name", 
-                      "v_x_s", "v_y_s",
-                      "v_x_f", "v_y_f",
-                      "b_x_s", "b_y_s",
-                      "b_x_f", "b_y_f",
-                      "v1_x_s", "v1_y_s",
-                      "v1_x_f", "v1_y_f",
-                      "v2_x_s", "v2_y_s",
-                      "v2_x_f", "v2_y_f",
-                      "v3_x_s", "v3_y_s",
-                      "v3_x_f", "v3_y_f",
-                      "hna_x_s", "hna_y_s",
-                      "hna_x_f", "hna_y_f",
-                      "lna_x_s", "lna_y_s",
-                      "lna_x_f", "lna_y_f")
+
+#This is already in the source script, but if you want to adjust, you can do it here.
+{
+  polycut<- matrix(c(1.1, 2.0, 2.5, 3.2, 3.7, 3.7, 2.0, 0.6,
+                     1.9, 1.5, 1.5, 1.8, 2.8, 3.7, 3.2, 2.75), nrow = 8, ncol=2)
+  colnames(polycut)<- c("SSC-H", "FL1-H")
+  bgate<- polygonGate(.gate = polycut, filterId = "Bacteria" )
+  vgate<- rectangleGate(filterId= "Viruses", "SSC-H" = c(-0.1,1.35), "FL1-H" = c(-0.1, 1.7)) 
+  #Different bacterial gates for viral vs bacterial stained samples. We need different gates cause sometimes the bacterial
+  #and viral samples have a slight shift.
+  HNA_Bacteria_b<- rectangleGate(filterId="HNA_Bacteria",
+                                 "SSC-H"=c(0.6, 3.5), "FL1-H"=c(2.15, 3.5))
+  LNA_Bacteria_b<- rectangleGate(filterId="LNA_Bacteria",
+                                 "SSC-H"=c(1.0, 3.5), "FL1-H"=c(1.5, 2.15))
+  
+  HNA_Bacteria_v<- rectangleGate(filterId="HNA_Bacteria",
+                                 "SSC-H"=c(0.6, 3.5), "FL1-H"=c(2.3, 3.5))
+  LNA_Bacteria_v<- rectangleGate(filterId="LNA_Bacteria",
+                                 "SSC-H"=c(1.0, 3.5), "FL1-H"=c(1.5, 2.3))
+  
+  #in case it doesn't, we could define the gate as following
+  HNA_Bacteria_bv<- rectangleGate(filterId="HNA_Bacteria",
+                                  "SSC-H"=c(0.6, 3.7), "FL1-H"=c(2.3, 3.6))
+  LNA_Bacteria_bv<- rectangleGate(filterId="LNA_Bacteria",
+                                  "SSC-H"=c(1.0, 3.7), "FL1-H"=c(1.5, 2.3))
+  
+  #same viral gates as we don't utilise the viral info from bacterial samples
+  v1<- rectangleGate(filterId="V1", 
+                     "SSC-H"= c(-0.1, 0.90), "FL1-H"= c(-0.1, 0.8)) 
+  v2<- rectangleGate(filterId="V2", 
+                     "SSC-H"= c(-0.1, 0.90), "FL1-H"= c(0.8, 1.25)) 
+  v3<- rectangleGate(filterId="V3", 
+                     "SSC-H"= c(-0.1, 1.3), "FL1-H"= c(1.25, 1.7))
+  
+  detectors<- c("FSC-H", "SSC-H", "FL1-H", "FL2-H", "FL3-H")
+  
+  translist_bv<- transformList(detectors, logTransform())
+}
+
+
+
 
 #provide an index for sample. Range
 r1<- 1
-r2<- 10
+r2<- length(metadata$Sample_Index)
 
 metadata = metadata
 b_ssc = c(1.1, 2.0, 2.5, 3.2, 3.7, 3.7, 2.0, 0.6)
@@ -212,29 +274,78 @@ v3_ssc = c(-0.1, 1.3)
 v3_fl1 = c(1.25, 1.7)
 
 
+
+populate_gate_df <- function(df = gate_df, range1 = r1, range2 = r2,
+                             g2_b_ssc = b_ssc, g2_b_fl1 = b_fl1, 
+                             g2_v_ssc = v_ssc, g2_v_fl1 = v_fl1, 
+                             g2_hna_ssc = hna_ssc, g2_hna_fl1 = hna_fl1, 
+                             g2_lna_ssc = lna_ssc, g2_lna_fl1 = lna_fl1, 
+                             g2_v1_ssc = v1_ssc, g2_v1_fl1 = v1_fl1, 
+                             g2_v2_ssc = v2_ssc, g2_v2_fl1 = v2_fl1, 
+                             g2_v3_ssc = v3_ssc, g2_v3_fl1 = v3_fl1,
+                             all_right_by = 0, all_left_by = 0,
+                             all_higher_by = 0, all_lower_by = 0) {
+  
+  #Range of samples to update
+  rows_to_update <- which(gate_df$Sample_Index %in% range1:range2)
+  
+  adjssc <- 0
+  adjfl1 <- 0 
+  
+  adj_args <- list(all_right_by = all_right_by, 
+                   all_left_by = all_left_by, 
+                   all_higher_by = all_higher_by, 
+                   all_lower_by = all_lower_by)
+  
+  for (var_name in names(adj_args)) {
+    cat("Variable", var_name, "has value:", adj_args[[var_name]], "\n")
+    
+    if (var_name == "all_right_by") {
+      cat("All SSC coordinates were adjusted to the right by", adj_args[[var_name]], "\n")
+      adjssc <- adjssc + adj_args[[var_name]]
+    } 
+    
+    if (var_name == "all_left_by") {
+      cat("All SSC coordinates were adjusted to the left by", adj_args[[var_name]], "\n")
+      adjssc <- adjssc - adj_args[[var_name]]
+    } 
+    
+    if (var_name == "all_higher_by") {
+      cat("All FL1 coordinates were adjusted higher by", adj_args[[var_name]], "\n")
+      adjfl1 <- adjfl1 + adj_args[[var_name]]
+    } 
+    
+    if (var_name == "all_lower_by") {
+      cat("All FL1 coordinates were adjusted lower by", adj_args[[var_name]], "\n")
+      adjfl1 <- adjfl1 - adj_args[[var_name]]
+    } 
+  }
+  
+  gate_df[rows_to_update, ] <- gate_df[rows_to_update, ] %>%
+    mutate(
+      g_b_ssc = list(list(g2_b_ssc + adjssc)),
+      g_b_fl1 = list(list(g2_b_fl1 + adjfl1)),
+      g_v_ssc = list(list(g2_v_ssc + adjssc)),
+      g_v_fl1 = list(list(g2_v_fl1 + adjfl1)),
+      g_hna_ssc = list(list(g2_hna_ssc + adjssc)),
+      g_hna_fl1 = list(list(g2_hna_fl1 + adjfl1)),
+      g_lna_ssc = list(list(g2_lna_ssc + adjssc)),
+      g_lna_fl1 = list(list(g2_lna_fl1 + adjfl1)),
+      g_v1_ssc = list(list(g2_v1_ssc + adjssc)),
+      g_v1_fl1 = list(list(g2_v1_fl1 + adjfl1)),
+      g_v2_ssc = list(list(g2_v2_ssc + adjssc)),
+      g_v2_fl1 = list(list(g2_v2_fl1 + adjfl1)),
+      g_v3_ssc = list(list(g2_v3_ssc + adjssc)),
+      g_v3_fl1 = list(list(g2_v3_fl1 + adjfl1))
+    )
   
   
-gate_df[r1:r2, -c(1)]<- c(1,2,3)
-a
-
-coords<- c()
-
-gate_df<- rbind(gate_df, c(as.character(metadata[i,1]), coords))
+  return(gate_df)
+}
 
 
-
-populate_gates<- function(){}
-
-
-tib<- tibble(
-  Sample_Name = as.character(metadata[i,1]),
-  gate = list(
-    tibble(b = v = tibble(x = v_x,
-                      y = v_y),
-           )
-  )
-)
-
+gate_df<- populate_gate_df() 
+gate_df<- populate_gate_df(range1 = 1, range2 = 4, all_right_by = 7)
 
 get_bv_plots()
 
