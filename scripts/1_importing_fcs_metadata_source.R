@@ -114,7 +114,7 @@ import_fcs<- function(fcs_dir, project_title = "Project", ...){
 
 
 
-populate_gate_df <- function(range1 = r1, range2 = r2,
+populate_gate_df <- function(sample_range = c(1: length(metadata$Sample_Index)),
                              g2_b_ssc = b_ssc, g2_b_fl1 = b_fl1, 
                              g2_v_ssc = v_ssc, g2_v_fl1 = v_fl1, 
                              g2_hna_ssc = hna_ssc, g2_hna_fl1 = hna_fl1, 
@@ -122,10 +122,48 @@ populate_gate_df <- function(range1 = r1, range2 = r2,
                              g2_v1_ssc = v1_ssc, g2_v1_fl1 = v1_fl1, 
                              g2_v2_ssc = v2_ssc, g2_v2_fl1 = v2_fl1, 
                              g2_v3_ssc = v3_ssc, g2_v3_fl1 = v3_fl1,
-                             all_right_by = 0, all_left_by = 0,
-                             all_higher_by = 0, all_lower_by = 0) {
+                             adj_x_all_by = 0, adj_y_all_by = 0, VP_VPC_different = F) {
   
   
+  
+  if (VP_VPC_different == F){
+    {
+      b_ssc = c(1.1, 2.0, 2.5, 3.2, 3.7, 3.7, 2.0, 0.6)
+      b_fl1 = c(1.9, 1.4, 1.4,1.8, 2.8, 3.7, 3.2, 2.75)
+      v_ssc = c(-0.25, 1.2)
+      v_fl1 = c(-0.1, 1.7)
+      hna_ssc = c(0.6, 3.5)
+      hna_fl1 = c(2.15, 3.5)
+      lna_ssc = c(1.0, 3.5)
+      lna_fl1 = c(1.4, 2.15)  
+      v1_ssc = c(-0.1, 0.90)
+      v1_fl1 = c(-0.1, 0.8)
+      v2_ssc = c(-0.1, 0.90)
+      v2_fl1 = c(0.8, 1.25)
+      v3_ssc = c(-0.1, 1.3)
+      v3_fl1 = c(1.25, 1.7)
+    }
+  }else{
+    {
+      b_ssc = c(1.1, 2.0, 2.5, 3.2, 3.7, 3.7, 2.0, 0.6)
+      b_fl1 = c(1.9, 1.4, 1.4,1.8, 2.8, 3.7, 3.2, 2.75)
+      v_ssc = c(-0.25, 1.2)
+      v_fl1 = c(-0.1, 1.7)
+      hna_ssc = c(0.6, 3.5)
+      hna_fl1 = c(2.15, 3.5)
+      lna_ssc = c(1.0, 3.5)
+      lna_fl1 = c(1.4, 2.15)  
+      v1_ssc = c(-0.1, 0.90)
+      v1_fl1 = c(-0.1, 0.9)
+      v2_ssc = c(-0.1, 0.90)
+      v2_fl1 = c(0.9, 1.25)
+      v3_ssc = c(-0.1, 1.3)
+      v3_fl1 = c(1.25, 1.7)
+    }
+  }
+  
+  
+  if (!exists("gate_df")) {
   gate_df<- data.frame(matrix(ncol = 16, nrow = nrow(metadata)))
   gate_df[,1:2]<- metadata[,c('Sample_Index', 'Sample_Name')]
   
@@ -143,49 +181,39 @@ populate_gate_df <- function(range1 = r1, range2 = r2,
   for(col in colname[-c(1:2)]) {
     gate_df[[col]] <- vector("list", nrow(gate_df))
   }
+  }
   
-  
-  #Range of samples to update
-  rows_to_update <- which(gate_df$Sample_Index %in% range1:range2)
+  # Range of samples to update
+  rows_to_update <- which(gate_df$Sample_Index %in% sample_range)
   
   adjssc <- 0
   adjfl1 <- 0 
   
-  adj_args <- list(all_right_by = all_right_by, 
-                   all_left_by = all_left_by, 
-                   all_higher_by = all_higher_by, 
-                   all_lower_by = all_lower_by)
+  adj_args <- list(adj_x_all_by = adj_x_all_by, 
+                   adj_y_all_by = adj_y_all_by)
+  
   
   for (var_name in names(adj_args)) {
     cat("Variable", var_name, "has value:", adj_args[[var_name]], "\n")
     
-    if (var_name == "all_right_by") {
-      cat("All SSC coordinates were adjusted to the right by", adj_args[[var_name]], "\n")
+    if (var_name == "adj_x_all_by") {
+      cat("All SSC coordinates were adjusted by", adj_args[[var_name]], "\n")
       adjssc <- adjssc + adj_args[[var_name]]
     } 
     
-    if (var_name == "all_left_by") {
-      cat("All SSC coordinates were adjusted to the left by", adj_args[[var_name]], "\n")
-      adjssc <- adjssc - adj_args[[var_name]]
-    } 
-    
-    if (var_name == "all_higher_by") {
-      cat("All FL1 coordinates were adjusted higher by", adj_args[[var_name]], "\n")
+    if (var_name == "adj_y_all_by") {
+      cat("All FL1 coordinates were adjusted by", adj_args[[var_name]], "\n")
       adjfl1 <- adjfl1 + adj_args[[var_name]]
     } 
     
-    if (var_name == "all_lower_by") {
-      cat("All FL1 coordinates were adjusted lower by", adj_args[[var_name]], "\n")
-      adjfl1 <- adjfl1 - adj_args[[var_name]]
-    } 
   }
   
   gate_df[rows_to_update, ] <- gate_df[rows_to_update, ] %>%
     mutate(
-      g_b_ssc = list(list(g2_b_ssc + adjssc)),
-      g_b_fl1 = list(list(g2_b_fl1 + adjfl1)),
-      g_v_ssc = list(list(g2_v_ssc + adjssc)),
-      g_v_fl1 = list(list(g2_v_fl1 + adjfl1)),
+      g_b_ssc = list(list(g2_b_ssc )),
+      g_b_fl1 = list(list(g2_b_fl1 )),
+      g_v_ssc = list(list(g2_v_ssc )),
+      g_v_fl1 = list(list(g2_v_fl1 )),
       g_hna_ssc = list(list(g2_hna_ssc + adjssc)),
       g_hna_fl1 = list(list(g2_hna_fl1 + adjfl1)),
       g_lna_ssc = list(list(g2_lna_ssc + adjssc)),
@@ -202,42 +230,42 @@ populate_gate_df <- function(range1 = r1, range2 = r2,
   return(gate_df)
 }
 
-gates<- function(){
-  
-  
-  
-  polycut<- matrix(c(gate_df$g_b_ssc[i][[1]][[1]], gate_df$g_b_fl1[i][[1]][[1]]), 
-                   nrow = length(gate_df$g_b_ssc[i][[1]][[1]]), 
+gates<- function(gate_index, gate_df2 = gate_df, ... #index
+                 ){
+  polycut<- matrix(c(gate_df2$g_b_ssc[gate_index][[1]][[1]], gate_df2$g_b_fl1[gate_index][[1]][[1]]), 
+                   nrow = length(gate_df2$g_b_ssc[gate_index][[1]][[1]]), 
                    ncol=2)
   colnames(polycut)<- c("SSC-H", "FL1-H")
-  bgate<- polygonGate(.gate = polycut, filterId = "Bacteria" )
-  vgate<- rectangleGate(filterId= "Viruses", 
-                        "SSC-H" = gate_df$g_v_ssc[i][[1]][[1]], 
-                        "FL1-H" = gate_df$g_v_fl1[i][[1]][[1]]) 
+  bgate<<- polygonGate(.gate = polycut, filterId = "Bacteria" )
+  vgate<<- rectangleGate(filterId= "Viruses", 
+                         "SSC-H" = gate_df2$g_v_ssc[gate_index][[1]][[1]], 
+                         "FL1-H" = gate_df2$g_v_fl1[gate_index][[1]][[1]]) 
   
-  HNA_Bacteria_bv<- rectangleGate(filterId="HNA_Bacteria", 
-                                  "SSC-H" = gate_df$g_hna_ssc[i][[1]][[1]], 
-                                  "FL1-H" = gate_df$g_hna_fl1[i][[1]][[1]]) 
-  LNA_Bacteria_bv<- rectangleGate(filterId="LNA_Bacteria", 
-                                  "SSC-H" = gate_df$g_lna_ssc[i][[1]][[1]], 
-                                  "FL1-H" = gate_df$g_lna_fl1[i][[1]][[1]]) 
+  HNA_Bacteria_bv<<- rectangleGate(filterId="HNA_Bacteria", 
+                                   "SSC-H" = gate_df2$g_hna_ssc[gate_index][[1]][[1]], 
+                                   "FL1-H" = gate_df2$g_hna_fl1[gate_index][[1]][[1]]) 
+  LNA_Bacteria_bv<<- rectangleGate(filterId="LNA_Bacteria", 
+                                   "SSC-H" = gate_df2$g_lna_ssc[gate_index][[1]][[1]], 
+                                   "FL1-H" = gate_df2$g_lna_fl1[gate_index][[1]][[1]]) 
   
   #same viral gates as we don't utilise the viral info from bacterial samples
-  v1<- rectangleGate(filterId="V1", 
-                     "SSC-H" = gate_df$g_v1_ssc[i][[1]][[1]], 
-                     "FL1-H" = gate_df$g_v1_fl1[i][[1]][[1]])  
-  v2<- rectangleGate(filterId="V2", 
-                     "SSC-H" = gate_df$g_v2_ssc[i][[1]][[1]], 
-                     "FL1-H" = gate_df$g_v2_fl1[i][[1]][[1]]) 
-  v3<- rectangleGate(filterId="V3", 
-                     "SSC-H" = gate_df$g_v3_ssc[i][[1]][[1]], 
-                     "FL1-H" = gate_df$g_v3_fl1[i][[1]][[1]]) 
+  v1<<- rectangleGate(filterId="V1", 
+                      "SSC-H" = gate_df2$g_v1_ssc[gate_index][[1]][[1]], 
+                      "FL1-H" = gate_df2$g_v1_fl1[gate_index][[1]][[1]])  
+  v2<<- rectangleGate(filterId="V2", 
+                      "SSC-H" = gate_df2$g_v2_ssc[gate_index][[1]][[1]], 
+                      "FL1-H" = gate_df2$g_v2_fl1[gate_index][[1]][[1]]) 
+  v3<<- rectangleGate(filterId="V3", 
+                      "SSC-H" = gate_df2$g_v3_ssc[gate_index][[1]][[1]], 
+                      "FL1-H" = gate_df2$g_v3_fl1[gate_index][[1]][[1]]) 
   
-  detectors<- c("FSC-H", "SSC-H", "FL1-H", "FL2-H", "FL3-H")
+  detectors<<- c("FSC-H", "SSC-H", "FL1-H", "FL2-H", "FL3-H")
   
-  translist_bv<- transformList(detectors, logTransform())
+  translist_bv<<- transformList(detectors, logTransform())
   
 }
+  
+
 
 ref_fcs_create<- function(ref_fcs_file){
   
@@ -315,13 +343,16 @@ bacterial_gate<- function(gate = "same", df = metadata, fcs_file, ...){
   
 }
 
-read_transform_fs_bv <- function(x){ #function to read and transform fcs files
-  flowCore::read.flowSet(c(ref_fcs, x)) %>%
+read_transform_fs_bv <- function(x, ...){ #function to read and transform fcs files
+  flowCore::read.flowSet(c(x, x)) %>%
     flowCore::transform(translist_bv)
   
 }
 
-gatingset_bv_stats<- function(flowset){ #flowset here is already transformed, cleaned, and compensated
+gatingset_bv_stats<- function(gate_index, flowset, ...){ #flowset here is already transformed, cleaned, and compensated
+  
+  gates(gate_index)
+  
   gsbv_fs<- flowWorkspace::GatingSet(flowset)
   gs_pop_add(gsbv_fs, bgate, parent="root")
   gs_pop_add(gsbv_fs, HNA_Bacteria, parent= "Bacteria")
@@ -360,15 +391,15 @@ get_bv_stats<- function(df = metadata, gate = "same", write_csv = T, test = F, .
       }else if(test == F){ 
         .GlobalEnv$project_title2<- project_title
       }
-      write.table(x,file= paste0("./results/",project_title2, "_counts.csv"), 
+      write.table(x,file= paste0(work_dir, "/results/",project_title2, "_counts.csv"), 
                   sep = ",", col.names = c("file_name", "pop", "count"))
-      .GlobalEnv$csv_file<- paste0("./results/",project_title2, "_counts.csv")
-      print(paste0("./results/",project_title,"_stats.csv created"))
+      .GlobalEnv$csv_file<- paste0(work_dir, "/results/",project_title2, "_counts.csv")
+      print(paste0(work_dir, "/results/",project_title,"_stats.csv created"))
     } else{
-      write.table(x,file= "./results/counts.csv", 
+      write.table(x,file= paste0(work_dir, "/results/counts.csv"), 
                   sep = ",", col.names = c("file_name", "pop", "count"))
-      .GlobalEnv$csv_file<- "./results/counts.csv"
-      print("./results/counts.csv created")
+      .GlobalEnv$csv_file<- paste0(work_dir, "/results/counts.csv")
+      print(paste0(work_dir, "/results/counts.csv", "created"))
     }
   }
   
@@ -376,25 +407,29 @@ get_bv_stats<- function(df = metadata, gate = "same", write_csv = T, test = F, .
   
   
   
-  for( i in 1:length(df$Sample_Name)){
+  for( i in 1:length(df$Sample_Index)){
     .GlobalEnv$i<- i
-    .GlobalEnv$fcs_file<- df$Sample_Name[i]
+    .GlobalEnv$fcs_file<- df[df$Sample_Index == i,]$Sample_Name
     
-    gates()
-    print(df$Sample_Name[i])
+    bacterial_gate(fcs_file = fcs_file)
     
-    .GlobalEnv$fcs_data<- paste0(work_dir,"data/raw_data/", fcs_file)
+    print(i)
+    print(df[df$Sample_Index == i,]$Sample_Name)
+    
+    .GlobalEnv$fcs_data<- paste0(paste0(work_dir,"data/raw_data/", fcs_file))
+    
+    gates(gate_index = i)
     
     
     
     try(read_transform_fs_bv(fcs_data)  %>%
-          gatingset_bv_stats())
+          gatingset_bv_stats(gate_index = i))
     t<- t +1
     print(paste0(t,"/",length(df$Sample_Name)))
     
     
-    print(HNA_Bacteria)
-    print(LNA_Bacteria)
+    #print(HNA_Bacteria)
+    #print(LNA_Bacteria)
     #rm(HNA_Bacteria, LNA_Bacteria, i, fcs_file, fcs_data)
   }
   
@@ -403,7 +438,9 @@ get_bv_stats<- function(df = metadata, gate = "same", write_csv = T, test = F, .
   
 }
 
-gatingset_bv_plots<- function(flowset, bins = 600, ...){ #flowset here is already transformed, cleaned, and compensated
+gatingset_bv_plots<- function(gate_index, flowset, bins = 600, ...){ #flowset here is already transformed, cleaned, and compensated
+  
+  gates(gate_index)
   
   gsbv_fs<- flowWorkspace::GatingSet(flowset)
   gs_pop_add(gsbv_fs, bgate, parent="root")
@@ -417,16 +454,18 @@ gatingset_bv_plots<- function(flowset, bins = 600, ...){ #flowset here is alread
   p<- ggcyto::ggcyto(gsbv_fs[[2]], aes(x = `SSC-H`, y = `FL1-H`), subset = "root") +
     geom_hex(bins = bins, ... ) +  
     theme_bw()+
-    labs(title= paste0(i, "   ", fcs_file, ...), x = "Side scatter (a.u.)", y = "Green Fluorescence (a.u.)")+
+    labs(title= paste0(gate_index, "   ", metadata[metadata$Sample_Index== gate_index, ]$Sample_Name,  ...), x = "Side scatter (a.u.)", y = "Green Fluorescence (a.u.)")+
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 12),
           strip.background = element_rect(colour="white", fill="white"),
           panel.border = element_rect(colour = "white")) +
     ggcyto_par_set(limits = list(x = c(-0.75,3.8), y = c(0, 3.6)))
-  p<- p + geom_gate("Viruses", colour = "black", size = 1) + geom_stats("Viruses", type = c("gate_name", "count"), adjust = c(1.25, 0), colour = "black")
-  p<- p + geom_gate("Bacteria", colour = "black", size = 1) + geom_stats("Bacteria", type = c("gate_name", "count"), adjust = c(-0, 1 ), colour = "black")
-  p<- p + geom_gate(c("HNA_Bacteria", "LNA_Bacteria"), colour = "red", size = 0.8) + geom_stats(c("HNA_Bacteria", "LNA_Bacteria"), type = c("gate_name", "count", "percent"), adjust = c(-0.25, 0.75 ), colour = "red")
-  p<- p + geom_gate(c("V1", "V2", "V3"), colour = "blue", size = 0.8) + geom_stats(c("V1", "V2", "V3"), type = c("gate_name", "count", "percent"), adjust = c(-0.25, 0.75 ), colour = "blue")
+  p<- p + geom_gate("Viruses", colour = "black", size = 1) + geom_stats("Viruses", type = c("gate_name", "count"), location = 'plot', adjust = c(0.9, 0.2), colour = "black")
+  p<- p + geom_gate("Bacteria", colour = "black", size = 1) + geom_stats("Bacteria", type = c("gate_name", "count"), location = 'plot',  adjust = c(0.4, 1), colour = "black")
+  p<- p + geom_gate(c("HNA_Bacteria", "LNA_Bacteria"), colour = "red", size = 0.8) + geom_stats(c("HNA_Bacteria", "LNA_Bacteria"), type = c("gate_name", "count"#, "percent"
+                                                                                                                                            ), adjust = c(-0.4, 0.8), colour = "red")
+  p<- p + geom_gate(c("V1", "V2", "V3"), colour = "blue", size = 0.8) + geom_stats(c("V1", "V2", "V3"), type = c("gate_name", "count"#, "percent"
+                                                                                                                 ),  adjust = c(-0.5,0.7), colour = "blue")
   
   print(p)
   
@@ -464,21 +503,24 @@ get_bv_plots<- function(df = metadata, gate = "same", write_pdf = T, test = F, .
   t<-0 #counter to 0
   p<- list() #creating an empty list
   
-  for( i in 1:length(df$Sample_Name)){
+  for( i in 1:length(df$Sample_Index)){
     .GlobalEnv$i<- i
-    .GlobalEnv$fcs_file<- df$Sample_Name[i]
+    .GlobalEnv$fcs_file<- df[df$Sample_Index == i,]$Sample_Name
     
     bacterial_gate(fcs_file = fcs_file)
     
-    print(df$Sample_Name[i])
+    print(i)
+    print(df[df$Sample_Index == i,]$Sample_Name)
     
     .GlobalEnv$fcs_data<- paste0(paste0(work_dir,"/data/raw_data/", fcs_file))
     
+    gates(i)
+    
     p[[i]]<- list()
     p[[i]]<- try(read_transform_fs_bv(fcs_data)  %>%
-                   gatingset_bv_plots())
+                   gatingset_bv_plots(gate_index = i))
     t<- t +1
-    print(paste0(t,"/",length(df$Sample_Name)))
+    print(paste0(t,"/",length(df$Sample_Index)))
     
     
     print(HNA_Bacteria)
@@ -489,6 +531,18 @@ get_bv_plots<- function(df = metadata, gate = "same", write_pdf = T, test = F, .
   graphics.off()
 }
 
+cytoplot<- function(index, metadata_df = metadata, bins = 600, ...){
+  
+  fcs_file<- metadata_df[metadata_df$Sample_Index[index], ]$Sample_Name
+  
+  .GlobalEnv$fcs_data<- paste0(paste0(work_dir,"/data/raw_data/", fcs_file))
+  
+  plot<- read_transform_fs_bv(fcs_data, ...)  %>%
+    gatingset_bv_plots(gate_index = index, bins, ...)
+  
+  return(plot)
+  
+}
 
 
 

@@ -136,18 +136,15 @@ import_matching_files(source_dir = source_directory, dest_dir = destination_dire
 #The default gating values
 
 {
-r1<- 1 #range start
-r2<- length(metadata$Sample_Index) #range end. For the entire dataframe
-
 metadata = metadata
 b_ssc = c(1.1, 2.0, 2.5, 3.2, 3.7, 3.7, 2.0, 0.6)
-b_fl1 = c(1.9, 1.5, 1.5, 1.8, 2.8, 3.7, 3.2, 2.75)
-v_ssc = c(0.6, 3.5)
+b_fl1 = c(1.9, 1.4, 1.4,1.8, 2.8, 3.7, 3.2, 2.75)
+v_ssc = c(-0.25, 1.2)
 v_fl1 = c(-0.1, 1.7)
 hna_ssc = c(0.6, 3.5)
 hna_fl1 = c(2.15, 3.5)
 lna_ssc = c(1.0, 3.5)
-lna_fl1 = c(1.5, 2.15)
+lna_fl1 = c(1.4,2.15)  
 v1_ssc = c(-0.1, 0.90)
 v1_fl1 = c(-0.1, 0.8)
 v2_ssc = c(-0.1, 0.90)
@@ -162,202 +159,66 @@ populate_gate_df() #This creates a default gating dataframe for all your samples
 
 #We always only start with plots
 
-get_bv_plots()
+#get_bv_plots()
 
-#As we see that gates dont fit all samples the same, we'll have to change the gating coordinates.
-#You can use populate_gate_df fucntion to do so
+#Note changes that need to be made. You can visuaize a cytoplot using sample index
+#and chnage gate_df using populate_df to make changes. 
 
+#1
+#Samples1 - 51 need no changes
+#let's visualize one of them now
 
+cytoplot(index = 46)
 
+#2
+#Samples 52 - 152 need to be lowered by 0.25
 
+cytoplot(index = 62, bins = 300)
 
+populate_gate_df(sample_range = c(52:152),
+                 VP_VPC_different = T,
+                 adj_y_all_by = -0.25 #from default
+)
 
-#This is already in the source script, but if you want to adjust, you can do it here.
-{
-  polycut<- matrix(c(1.1, 2.0, 2.5, 3.2, 3.7, 3.7, 2.0, 0.6,
-                     1.9, 1.5, 1.5, 1.8, 2.8, 3.7, 3.2, 2.75), nrow = 8, ncol=2)
-  colnames(polycut)<- c("SSC-H", "FL1-H")
-  bgate<- polygonGate(.gate = polycut, filterId = "Bacteria" )
-  vgate<- rectangleGate(filterId= "Viruses", "SSC-H" = c(-0.1,1.35), "FL1-H" = c(-0.1, 1.7)) 
-  #Different bacterial gates for viral vs bacterial stained samples. We need different gates cause sometimes the bacterial
-  #and viral samples have a slight shift.
-  HNA_Bacteria_b<- rectangleGate(filterId="HNA_Bacteria",
-                                 "SSC-H"=c(0.6, 3.5), "FL1-H"=c(2.15, 3.5))
-  LNA_Bacteria_b<- rectangleGate(filterId="LNA_Bacteria",
-                                 "SSC-H"=c(1.0, 3.5), "FL1-H"=c(1.5, 2.15))
-  
-  HNA_Bacteria_v<- rectangleGate(filterId="HNA_Bacteria",
-                                 "SSC-H"=c(0.6, 3.5), "FL1-H"=c(2.3, 3.5))
-  LNA_Bacteria_v<- rectangleGate(filterId="LNA_Bacteria",
-                                 "SSC-H"=c(1.0, 3.5), "FL1-H"=c(1.5, 2.3))
-  
-  #in case it doesn't, we could define the gate as following
-  HNA_Bacteria_bv<- rectangleGate(filterId="HNA_Bacteria",
-                                  "SSC-H"=c(0.6, 3.7), "FL1-H"=c(2.3, 3.6))
-  LNA_Bacteria_bv<- rectangleGate(filterId="LNA_Bacteria",
-                                  "SSC-H"=c(1.0, 3.7), "FL1-H"=c(1.5, 2.3))
-  
-  #same viral gates as we don't utilise the viral info from bacterial samples
-  v1<- rectangleGate(filterId="V1", 
-                     "SSC-H"= c(-0.1, 0.90), "FL1-H"= c(-0.1, 0.8)) 
-  v2<- rectangleGate(filterId="V2", 
-                     "SSC-H"= c(-0.1, 0.90), "FL1-H"= c(0.8, 1.25)) 
-  v3<- rectangleGate(filterId="V3", 
-                     "SSC-H"= c(-0.1, 1.3), "FL1-H"= c(1.25, 1.7))
-  
-  detectors<- c("FSC-H", "SSC-H", "FL1-H", "FL2-H", "FL3-H")
-  
-  translist_bv<- transformList(detectors, logTransform())
-}
+cytoplot(index = 62, bins = 100)
 
 
+#I'm finding sme issuses separating VP and VPC V1 and V2 here, but total viruses works fine
 
-#This is already in the source script, but if you want to adjust, you can do it here.
-{
-  polycut<- matrix(c(1.1, 2.0, 2.5, 3.2, 3.7, 3.7, 2.0, 0.6,
-                     1.9, 1.5, 1.5, 1.8, 2.8, 3.7, 3.2, 2.75), nrow = 8, ncol=2)
-  colnames(polycut)<- c("SSC-H", "FL1-H")
-  bgate<- polygonGate(.gate = polycut, filterId = "Bacteria" )
-  vgate<- rectangleGate(filterId= "Viruses", "SSC-H" = c(-0.1,1.35), "FL1-H" = c(-0.1, 1.7)) 
-  #Different bacterial gates for viral vs bacterial stained samples. We need different gates cause sometimes the bacterial
-  #and viral samples have a slight shift.
-  HNA_Bacteria_b<- rectangleGate(filterId="HNA_Bacteria",
-                                 "SSC-H"=c(0.6, 3.5), "FL1-H"=c(2.15, 3.5))
-  LNA_Bacteria_b<- rectangleGate(filterId="LNA_Bacteria",
-                                 "SSC-H"=c(1.0, 3.5), "FL1-H"=c(1.5, 2.15))
-  
-  HNA_Bacteria_v<- rectangleGate(filterId="HNA_Bacteria",
-                                 "SSC-H"=c(0.6, 3.5), "FL1-H"=c(2.3, 3.5))
-  LNA_Bacteria_v<- rectangleGate(filterId="LNA_Bacteria",
-                                 "SSC-H"=c(1.0, 3.5), "FL1-H"=c(1.5, 2.3))
-  
-  #in case it doesn't, we could define the gate as following
-  HNA_Bacteria_bv<- rectangleGate(filterId="HNA_Bacteria",
-                                  "SSC-H"=c(0.6, 3.7), "FL1-H"=c(2.3, 3.6))
-  LNA_Bacteria_bv<- rectangleGate(filterId="LNA_Bacteria",
-                                  "SSC-H"=c(1.0, 3.7), "FL1-H"=c(1.5, 2.3))
-  
-  #same viral gates as we don't utilise the viral info from bacterial samples
-  v1<- rectangleGate(filterId="V1", 
-                     "SSC-H"= c(-0.1, 0.90), "FL1-H"= c(-0.1, 0.8)) 
-  v2<- rectangleGate(filterId="V2", 
-                     "SSC-H"= c(-0.1, 0.90), "FL1-H"= c(0.8, 1.25)) 
-  v3<- rectangleGate(filterId="V3", 
-                     "SSC-H"= c(-0.1, 1.3), "FL1-H"= c(1.25, 1.7))
-  
-  detectors<- c("FSC-H", "SSC-H", "FL1-H", "FL2-H", "FL3-H")
-  
-  translist_bv<- transformList(detectors, logTransform())
-}
+
+#3
+#Samples 153 - 166 need no changes
+
+cytoplot(index = 160, bins = 200)
+
+#4
+#Samples 167 - 253 need to be lowered by 0.3
+
+cytoplot(index = 250, bins = 200)
+
+
+populate_gate_df(sample_range = c(167:253),
+                 adj_y_all_by = -0.3 #from default
+)
+
+cytoplot(index = 250, bins = 200, )
 
 
 
 
-#provide an index for sample. Range
-r1<- 1
-r2<- length(metadata$Sample_Index)
-
-metadata = metadata
-b_ssc = c(1.1, 2.0, 2.5, 3.2, 3.7, 3.7, 2.0, 0.6)
-b_fl1 = c(1.9, 1.5, 1.5, 1.8, 2.8, 3.7, 3.2, 2.75)
-v_ssc = c(0.6, 3.5)
-v_fl1 = c(-0.1, 1.7)
-hna_ssc = c(0.6, 3.5)
-hna_fl1 = c(2.15, 3.5)
-lna_ssc = c(1.0, 3.5)
-lna_fl1 = c(1.5, 2.15)
-v1_ssc = c(-0.1, 0.90)
-v1_fl1 = c(-0.1, 0.8)
-v2_ssc = c(-0.1, 0.90)
-v2_fl1 = c(0.8, 1.25)
-v3_ssc = c(-0.1, 1.3)
-v3_fl1 = c(1.25, 1.7)
 
 
 
-populate_gate_df <- function(df = gate_df, range1 = r1, range2 = r2,
-                             g2_b_ssc = b_ssc, g2_b_fl1 = b_fl1, 
-                             g2_v_ssc = v_ssc, g2_v_fl1 = v_fl1, 
-                             g2_hna_ssc = hna_ssc, g2_hna_fl1 = hna_fl1, 
-                             g2_lna_ssc = lna_ssc, g2_lna_fl1 = lna_fl1, 
-                             g2_v1_ssc = v1_ssc, g2_v1_fl1 = v1_fl1, 
-                             g2_v2_ssc = v2_ssc, g2_v2_fl1 = v2_fl1, 
-                             g2_v3_ssc = v3_ssc, g2_v3_fl1 = v3_fl1,
-                             all_right_by = 0, all_left_by = 0,
-                             all_higher_by = 0, all_lower_by = 0) {
-  
-  #Range of samples to update
-  rows_to_update <- which(gate_df$Sample_Index %in% range1:range2)
-  
-  adjssc <- 0
-  adjfl1 <- 0 
-  
-  adj_args <- list(all_right_by = all_right_by, 
-                   all_left_by = all_left_by, 
-                   all_higher_by = all_higher_by, 
-                   all_lower_by = all_lower_by)
-  
-  for (var_name in names(adj_args)) {
-    cat("Variable", var_name, "has value:", adj_args[[var_name]], "\n")
-    
-    if (var_name == "all_right_by") {
-      cat("All SSC coordinates were adjusted to the right by", adj_args[[var_name]], "\n")
-      adjssc <- adjssc + adj_args[[var_name]]
-    } 
-    
-    if (var_name == "all_left_by") {
-      cat("All SSC coordinates were adjusted to the left by", adj_args[[var_name]], "\n")
-      adjssc <- adjssc - adj_args[[var_name]]
-    } 
-    
-    if (var_name == "all_higher_by") {
-      cat("All FL1 coordinates were adjusted higher by", adj_args[[var_name]], "\n")
-      adjfl1 <- adjfl1 + adj_args[[var_name]]
-    } 
-    
-    if (var_name == "all_lower_by") {
-      cat("All FL1 coordinates were adjusted lower by", adj_args[[var_name]], "\n")
-      adjfl1 <- adjfl1 - adj_args[[var_name]]
-    } 
-  }
-  
-  gate_df[rows_to_update, ] <- gate_df[rows_to_update, ] %>%
-    mutate(
-      g_b_ssc = list(list(g2_b_ssc + adjssc)),
-      g_b_fl1 = list(list(g2_b_fl1 + adjfl1)),
-      g_v_ssc = list(list(g2_v_ssc + adjssc)),
-      g_v_fl1 = list(list(g2_v_fl1 + adjfl1)),
-      g_hna_ssc = list(list(g2_hna_ssc + adjssc)),
-      g_hna_fl1 = list(list(g2_hna_fl1 + adjfl1)),
-      g_lna_ssc = list(list(g2_lna_ssc + adjssc)),
-      g_lna_fl1 = list(list(g2_lna_fl1 + adjfl1)),
-      g_v1_ssc = list(list(g2_v1_ssc + adjssc)),
-      g_v1_fl1 = list(list(g2_v1_fl1 + adjfl1)),
-      g_v2_ssc = list(list(g2_v2_ssc + adjssc)),
-      g_v2_fl1 = list(list(g2_v2_fl1 + adjfl1)),
-      g_v3_ssc = list(list(g2_v3_ssc + adjssc)),
-      g_v3_fl1 = list(list(g2_v3_fl1 + adjfl1))
-    )
-  
-  
-  return(gate_df)
-}
+
+#As we see that gates don't fit all samples the same, we'll have to change the gating coordinates.
+#You can use populate_gate_df function to do so
 
 
-gate_df<- populate_gate_df() 
-gate_df<- populate_gate_df(range1 = 1, range2 = 4, all_right_by = 7)
 
-get_bv_plots()
+cytoplot(index = 7)
+
+
+##### i wil make these changes between V1 and V2 later. Fo rnow, total viruses are alright. 
+#Let's get the stats out
 
 get_bv_stats()
-
-
-
-
-##### plot for shiny
-
-read_transform_fs_bv <- function(x){ #function to read and transform fcs files
-  flowCore::read.flowSet(c(x, x)) %>%
-    flowCore::transform(translist_bv)
-  
-}
