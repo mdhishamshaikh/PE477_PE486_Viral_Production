@@ -433,6 +433,18 @@ get_bv_stats<- function(df = metadata, gate = "same", write_csv = T, test = F, .
     #rm(HNA_Bacteria, LNA_Bacteria, i, fcs_file, fcs_data)
   }
   
+  # After the CSV has been written and before the function ends:
+  if (write_csv == T){
+    # Read the CSV back into R
+    modified_df <- read.csv(.GlobalEnv$csv_file, stringsAsFactors = FALSE)
+    
+    # Remove .1 from Sample_Name values
+    modified_df$file_name <- gsub("\\.1$", "", modified_df$file_name)
+    
+    # Write the modified dataframe back to the CSV
+    write.csv(modified_df, .GlobalEnv$csv_file, row.names = FALSE)
+  }
+  
   rm(t)
   
   
@@ -529,6 +541,8 @@ get_bv_plots<- function(df = metadata, gate = "same", write_pdf = T, test = F, .
   }
   rm(t)
   graphics.off()
+  
+  
 }
 
 cytoplot<- function(index, metadata_df = metadata, bins = 600, ...){
@@ -597,100 +611,100 @@ combine_metadata_counts <- function(metadata_df = metadata, counts_df = counts){
   
 }
 
-calc_TE<- function(df = counts_metadata, TE_df = TE ){ 
+calc_TE<- function(df = counts_metadata){ 
   
-  counts_metadata<- df
-  TE<- TE_df
-  counts_metadata<- rbind(counts_metadata%>% dplyr::filter(Sample_Type != 'TE'), TE)  %>%
-    arrange(Sample_Name)
+  counts_metadata2<- df
+  #
+  #WHY?
   
-  counts_metadata[,'TE_Ba']<- NA
-  counts_metadata[,'TE_Vi']<- NA
+  
+  counts_metadata2[,'TE_Ba']<- NA
+  counts_metadata2[,'TE_Vi']<- NA
   
   #We can now run TE calculation script
-  for (name in counts_metadata$Sample_Name){ #Here I added TE value for both viruses and bacteria
-    if (counts_metadata[counts_metadata$Sample_Name == name,]$Staining_Protocol == 'Viruses'
+  for (name in counts_metadata2$Sample_Name){ #Here I added TE value for both viruses and bacteria
+    if (counts_metadata2[counts_metadata2$Sample_Name == name,]$Staining_Protocol == 'Viruses'
         #selecting rows with the specified file name that also had viral staining protocol
     ) {
-      if (counts_metadata[counts_metadata$Sample_Name == name,]$Sample_Type  == 'TE') {
+      if (counts_metadata2[counts_metadata2$Sample_Name == name,]$Sample_Type  == 'TE') {
         print("TE") #we don't want this. so we move on and look for a count file
-      } else if (counts_metadata[counts_metadata$Sample_Name == name,]$Sample_Type  != 'TE') {
-        if (counts_metadata[which(counts_metadata$Sample_Name == name) + c(-1), ]$Sample_Type  == 'TE'
+      } else if (counts_metadata2[counts_metadata2$Sample_Name == name,]$Sample_Type  != 'TE') {
+        if (counts_metadata2[which(counts_metadata2$Sample_Name == name) + c(-1), ]$Sample_Type  == 'TE'
             #looking to see if there is a TE above this count file. if yes, we record it as 'a'
         ){
-          a<- counts_metadata[which(counts_metadata$Sample_Name == name) + c(-1), ]$HNALNA #HNALNA and not V1V2V3 because we might use viral samples for bacterial measurements in VP assay
-          if (counts_metadata[which(counts_metadata$Sample_Name == name) + c(-2), ]$Sample_Type  == 'TE'
+          a<- counts_metadata2[which(counts_metadata2$Sample_Name == name) + c(-1), ]$HNALNA #HNALNA and not V1V2V3 because we might use viral samples for bacterial measurements in VP assay
+          if (counts_metadata2[which(counts_metadata2$Sample_Name == name) + c(-2), ]$Sample_Type  == 'TE'
               #here we see if there is a TE above our first TE. we record this as 'b'
           ){
-            b<- counts_metadata[which(counts_metadata$Sample_Name == name) + c(-2), ]$HNALNA
+            b<- counts_metadata2[which(counts_metadata2$Sample_Name == name) + c(-2), ]$HNALNA
           }
         }
         print(paste(name, a, b, mean(c(a,b)))) #too see what the output is
-        counts_metadata[counts_metadata$Sample_Name == name,]$TE_Ba <- mean(c(a,b)) ##We are recording TE for bacteria in viral samples
+        counts_metadata2[counts_metadata2$Sample_Name == name,]$TE_Ba <- mean(c(a,b)) ##We are recording TE for bacteria in viral samples
         #adding the output to TE_value column
       }
       
-      if (counts_metadata[counts_metadata$Sample_Name == name,]$Sample_Type  == 'TE') {
+      if (counts_metadata2[counts_metadata2$Sample_Name == name,]$Sample_Type  == 'TE') {
         print("TE") #we don't want this. so we move on and look for a count file
-      } else if (counts_metadata[counts_metadata$Sample_Name == name,]$Sample_Type  != 'TE') {
-        if (counts_metadata[which(counts_metadata$Sample_Name == name) + c(-1), ]$Sample_Type  == 'TE'
+      } else if (counts_metadata2[counts_metadata2$Sample_Name == name,]$Sample_Type  != 'TE') {
+        if (counts_metadata2[which(counts_metadata2$Sample_Name == name) + c(-1), ]$Sample_Type  == 'TE'
             #looking to see if there is a TE above this count file. if yes, we record it as 'a'
         ){
-          c<- counts_metadata[which(counts_metadata$Sample_Name == name) + c(-1), ]$V1V2V3
-          if (counts_metadata[which(counts_metadata$Sample_Name == name) + c(-2), ]$Sample_Type  == 'TE'
+          c<- counts_metadata2[which(counts_metadata2$Sample_Name == name) + c(-1), ]$V1V2V3
+          if (counts_metadata2[which(counts_metadata2$Sample_Name == name) + c(-2), ]$Sample_Type  == 'TE'
               #here we see if there is a TE above our first TE. we record this as 'b'
           ){
-            d<- counts_metadata[which(counts_metadata$Sample_Name == name) + c(-2), ]$V1V2V3
+            d<- counts_metadata2[which(counts_metadata2$Sample_Name == name) + c(-2), ]$V1V2V3
           }
         }
         print(paste(name, a, b, mean(c(a,b)))) #too see what the output is
-        counts_metadata[counts_metadata$Sample_Name == name,]$TE_Vi <- mean(c(c,d))
+        counts_metadata2[counts_metadata2$Sample_Name == name,]$TE_Vi <- mean(c(c,d))
       }
     } else { #THIS PART WILL NOT RUN AS ALL MY SAMPLES ARE VIRAL 
-      if (counts_metadata[counts_metadata$Sample_Name == name,]$Staining_Protocol == 'Bacteria') {
-        if (counts_metadata[counts_metadata$Sample_Name == name,]$Sample_Type  == 'TE') {
+      if (counts_metadata2[counts_metadata2$Sample_Name == name,]$Staining_Protocol == 'Bacteria') {
+        if (counts_metadata2[counts_metadata2$Sample_Name == name,]$Sample_Type  == 'TE') {
           print("yes")
-        } else if (counts_metadata[counts_metadata$Sample_Name == name,]$Sample_Type != 'TE') {
-          if (counts_metadata[which(counts_metadata$Sample_Name == name) + c(-1), ]$Sample_Type  == 'TE'){
-            a<- counts_metadata[which(counts_metadata$Sample_Name == name) + c(-1), ]$HNALNA
-            if (counts_metadata[which(counts_metadata$Sample_Name == name) + c(-2), ]$Sample_Type  == 'TE'){
-              b<- counts_metadata[which(counts_metadata$Sample_Name == name) + c(-2), ]$HNALNA
+        } else if (counts_metadata2[counts_metadata2$Sample_Name == name,]$Sample_Type != 'TE') {
+          if (counts_metadata2[which(counts_metadata2$Sample_Name == name) + c(-1), ]$Sample_Type  == 'TE'){
+            a<- counts_metadata2[which(counts_metadata2$Sample_Name == name) + c(-1), ]$HNALNA
+            if (counts_metadata2[which(counts_metadata2$Sample_Name == name) + c(-2), ]$Sample_Type  == 'TE'){
+              b<- counts_metadata2[which(counts_metadata2$Sample_Name == name) + c(-2), ]$HNALNA
             }
           }
           print(paste(name, a, b, mean(c(a,b))))
-          counts_metadata[counts_metadata$Sample_Name == name,]$TE_Ba <- mean(c(a,b)) ##We are recording TE for bacteria in bacterial samples. There is no need to do it for viruses
+          counts_metadata2[counts_metadata2$Sample_Name == name,]$TE_Ba <- mean(c(a,b)) ##We are recording TE for bacteria in bacterial samples. There is no need to do it for viruses
         }
       }
     }
   }
-  .GlobalEnv$counts_metadata<- counts_metadata
-  return(counts_metadata)
+  .GlobalEnv$counts_metadata_TE<- counts_metadata2
+  return(counts_metadata2)
 }
 
 adjust_TE<- function(counts_metadata_df = counts_metadata, write_csv = T){
   
-  counts_metadata<- counts_metadata_df
+  counts_metadata2<- counts_metadata_df
   for (cols in c( "c_Bacteria", "c_HNA", "c_LNA", "c_Viruses", "c_V1", "c_V2", "c_V3")){
-    counts_metadata[, cols] <- NA
+    counts_metadata2[, cols] <- NA
   }
   
   {
-    counts_metadata$c_Viruses<- with(counts_metadata, ((V1V2V3-((V1V2V3/V1V2V3)*TE_Vi))*Dilution*60*1000)/(Flowrate*Acquisition_Duration))
-    counts_metadata$c_V1<- with(counts_metadata, ((V1-((V1/V1V2V3)*TE_Vi))*Dilution*60*1000)/(Flowrate*Acquisition_Duration))
-    counts_metadata$c_V2<- with(counts_metadata, ((V2-((V2/V1V2V3)*TE_Vi))*Dilution*60*1000)/(Flowrate*Acquisition_Duration))
-    counts_metadata$c_V3<- with(counts_metadata, ((V3-((V3/V1V2V3)*TE_Vi))*Dilution*60*1000)/(Flowrate*Acquisition_Duration))
-    counts_metadata$c_Bacteria<- with(counts_metadata, ((HNALNA-((HNALNA/HNALNA)*TE_Ba))*Dilution*60*1000)/(Flowrate*Acquisition_Duration))
-    counts_metadata$c_HNA<- with(counts_metadata, ((HNA_Bacteria-((HNA_Bacteria/HNALNA)*TE_Ba))*Dilution*60*1000)/(Flowrate*Acquisition_Duration)) 
-    counts_metadata$c_LNA<- with(counts_metadata, ((LNA_Bacteria-((LNA_Bacteria/HNALNA)*TE_Ba))*Dilution*60*1000)/(Flowrate*Acquisition_Duration))
-    counts_metadata$VBR<- with(counts_metadata, c_Viruses/c_Bacteria) #calculated with bacteria from viral samples. Did an LR and the R2 was 0.95
-    counts_metadata$HNAperLNA<- with(counts_metadata, c_HNA/c_LNA)
+    counts_metadata2$c_Viruses<- with(counts_metadata2, ((V1V2V3-((V1V2V3/V1V2V3)*TE_Vi))*Dilution*60*1000)/(Flowrate*Acquisition_Duration))
+    counts_metadata2$c_V1<- with(counts_metadata2, ((V1-((V1/V1V2V3)*TE_Vi))*Dilution*60*1000)/(Flowrate*Acquisition_Duration))
+    counts_metadata2$c_V2<- with(counts_metadata2, ((V2-((V2/V1V2V3)*TE_Vi))*Dilution*60*1000)/(Flowrate*Acquisition_Duration))
+    counts_metadata2$c_V3<- with(counts_metadata2, ((V3-((V3/V1V2V3)*TE_Vi))*Dilution*60*1000)/(Flowrate*Acquisition_Duration))
+    counts_metadata2$c_Bacteria<- with(counts_metadata2, ((HNALNA-((HNALNA/HNALNA)*TE_Ba))*Dilution*60*1000)/(Flowrate*Acquisition_Duration))
+    counts_metadata2$c_HNA<- with(counts_metadata2, ((HNA_Bacteria-((HNA_Bacteria/HNALNA)*TE_Ba))*Dilution*60*1000)/(Flowrate*Acquisition_Duration)) 
+    counts_metadata2$c_LNA<- with(counts_metadata2, ((LNA_Bacteria-((LNA_Bacteria/HNALNA)*TE_Ba))*Dilution*60*1000)/(Flowrate*Acquisition_Duration))
+    counts_metadata2$VBR<- with(counts_metadata2, c_Viruses/c_Bacteria) #calculated with bacteria from viral samples. Did an LR and the R2 was 0.95
+    counts_metadata2$HNAperLNA<- with(counts_metadata2, c_HNA/c_LNA)
     #scatter.smooth(S22[S22$Staining_Protocol == 'Bacteria',]$c_Bacteria ~ S22[S22$Staining_Protocol == 'Viruses',]$c_Bacteria )
     #summary(lm(S22[S22$Staining_Protocol == 'Bacteria',]$c_Bacteria ~ S22[S22$Staining_Protocol == 'Viruses',]$c_Bacteria ))
   }
   
   {
     
-    otpt_df<- counts_metadata[counts_metadata$Sample_Type != 'TE',]
+    otpt_df<- counts_metadata2[counts_metadata2$Sample_Type != 'TE',]
     otpt_df<- otpt_df[, c('Sample_Name', 'Staining_Protocol', 'Expt_Date', 'Date_Measurement',
                           'Location', 'Expt_No', 'Depth', 'Sample_Type', 'Timepoint', 'Replicate', 'c_Bacteria', 'c_HNA', 'c_LNA', 
                           'c_Viruses', 'c_V1', 'c_V2', 'c_V3', 'VBR', 'HNAperLNA')]
@@ -709,7 +723,7 @@ adjust_TE<- function(counts_metadata_df = counts_metadata, write_csv = T){
     ]
   }
   if (write_csv == T){
-    write.csv(otpt_df, paste0("./results/", project_title, ".csv"), row.names = F)
+    write.csv(otpt_df, paste0("PE_Cruises/results/", project_title, "_per_mL.csv"), row.names = F)
   }
   print("Counts were adjusted with TE")
   return(otpt_df)
