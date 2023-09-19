@@ -1,0 +1,398 @@
+library(tidyverse)
+library(leaflet)
+library(ggsci)
+library(ggmap)
+library(sf)
+
+pe_df<- read.csv("./PE_Cruises/results/PE_Cruises_viral_production/vp_abundance_nutrients_ts.csv")
+pe_df <- pe_df %>%
+  mutate(Sample_Index = factor(paste0(Location, "_", Station_Number)))
+
+#Let's define some categories.
+nutrients<- c("TON", "Nitrite", #'Nitrate', #remove nitrate as it is claculated using TON-Nitrite
+              "Phosphate", "Silicate")
+ts<- c("Temperature",
+       "Salinity")
+viruses<- c("Total_Viruses",
+            "V1", "V2", "V3")
+bacteria<- c("Total_Bacteria", "HNA", "LNA")
+common<- c("Location", "Station_Number", 
+           "Depth", "Sample_Index")
+
+
+#Nutrients ####
+
+nuts_df <- pe_df %>%
+  select(all_of(c(common, nutrients))) %>%
+  pivot_longer(cols = nutrients,
+              names_to = "Nutrients",
+               values_to = "Nutrients_value") %>%
+  mutate(Nutrients_value = ifelse(Nutrients_value <0, 0, Nutrients_value),
+         Nutrients = factor(Nutrients,
+                            levels = nutrients,
+                            labels = c("Total\nOrganic\nNitrogen", "Nitrite", "Phosphate", "Silicate")))
+
+ggplot(data = nuts_df,
+       aes(x = as.factor(Sample_Index),
+           y = Nutrients_value,
+           color = Nutrients,
+           fill = Location)) +
+  geom_hline(yintercept = 0,
+             size = 1,
+             alpha = 0.2)+
+  geom_point(size = 2)+
+  geom_text(aes(label = round(Nutrients_value, 1)), vjust = 1.5, size = 4)+
+  expand_limits(y = -0.2)+
+  scale_color_aaas()+
+  #expand_limits(y =  7) +
+ guides(fill = F)+
+  xlab("Station Number")+
+  ylab("Nutrients (uM)")+
+  labs(title = "Nutrients - PE477 & PE486 cruises"
+  )+
+  facet_grid(. ~ Nutrients,
+             scale = 'free')+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90),
+        strip.background = element_rect(fill = "#202a47"),
+        strip.text = element_text(color = 'white',
+                                  size = 10,
+                                  face = 'bold'),
+        legend.title = element_text(face = 'bold'),
+        axis.text = element_text(face = 'bold'),
+        title = element_text(face = 'bold')
+)
+
+#Temperature and Salinity ####
+
+ts_df <- pe_df %>%
+  select(all_of(c(common, ts))) %>%
+  pivot_longer(cols = ts,
+               names_to = "TS",
+               values_to = "TS_Value") %>%
+  mutate(TS = factor(TS,
+                            levels = ts,
+                            labels = c("Temperature", "Salinity")))
+
+ggplot(data = ts_df,
+       aes(x = as.factor(Station_Number),
+           y = TS_Value,
+           color = TS,
+           fill = Location)) +
+  geom_hline(yintercept = 0,
+             size = 1,
+             alpha = 0.2)+
+  geom_point(size = 2)+
+  geom_text(aes(label = round(TS_Value, 1)), vjust = 1.5, size = 4)+
+  expand_limits(y = -2)+
+  scale_color_aaas()+
+  guides(fill = F)+
+  xlab("Station Number")+
+ # ylab("Nutrients (uM)")+
+  labs(title = "Temperature & Salinity - PE477 & PE486 cruises"
+  )+
+  facet_grid(Location ~ TS,
+             scale = 'free')+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90),
+        strip.background = element_rect(fill = "#202a47"),
+        strip.text = element_text(color = 'white',
+                                  size = 10,
+                                  face = 'bold'),
+        legend.title = element_text(face = 'bold'),
+        axis.text = element_text(face = 'bold'),
+        title = element_text(face = 'bold')
+  )
+
+#Bacteria ####
+ba_df<- pe_df %>%
+  select(all_of(c(common, bacteria))) %>%
+  pivot_longer(cols = bacteria,
+               names_to = "Bacteria",
+               values_to = "Ba_abundance") %>%
+  mutate(Bacteria = factor(Bacteria,
+                     levels = bacteria,
+                     labels = c("Total Bacteria",
+                                "HNA Bacteria", "LNA Bacteria")))
+
+ggplot(data = ba_df,
+       aes(x = as.factor(Sample_Index),
+           y = Ba_abundance/1e+6,
+           color = as.factor(Bacteria),
+           fill = Location,
+           shape = Location)) +
+  geom_hline(yintercept = 0,
+             size = 1,
+             alpha = 0.2)+
+  geom_point(size = 2)+
+  geom_text(aes(label = round(Ba_abundance/1e+6, 1)), vjust = 2, size = 4) + 
+  expand_limits(y = -0.1)+
+  scale_color_aaas()+
+  guides(fill = F)+
+  xlab("Station Number")+
+  ylab("Bacterial abundance (in millions per mL)")+
+  labs(title = "Bacterial Abundance - PE477 & PE486 cruises"
+  )+
+   facet_grid(. ~ Bacteria,
+             scale = 'free')+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90),
+        strip.background = element_rect(fill = "#202a47"),
+        strip.text = element_text(color = 'white',
+                                  size = 10,
+                                  face = 'bold'),
+        legend.title = element_text(face = 'bold'),
+        axis.text = element_text(face = 'bold')
+  )
+
+#Viruses ####
+vi_df<- pe_df %>%
+  select(all_of(c(common, viruses))) %>%
+  pivot_longer(cols = viruses,
+               names_to = "Viruses",
+               values_to = "Vi_abundance") %>%
+  mutate(Bacteria = factor(Viruses,
+                           levels = viruses,
+                           labels = c("Total Viruses",
+                                      "V1 Viruses", "V2 Viruses",
+                                      "V3 Viruses")))
+
+ggplot(data = vi_df,
+       aes(x = as.factor(Sample_Index),
+           y = Vi_abundance/1e+6,
+           color = as.factor(Viruses),
+           fill = Location,
+           shape = Location)) +
+  geom_hline(yintercept = 0,
+             size = 1,
+             alpha = 0.2)+
+  geom_point(size = 2)+
+  geom_text(aes(label = round(Vi_abundance/1e+6, 1)), vjust = 1.5, size = 4) + 
+  expand_limits(y = -2)+
+  scale_color_aaas()+
+  guides(fill = F)+
+  xlab("Station Number")+
+  ylab("Viral abundance (in millions per mL)")+
+  labs(title = "Viral Abundance - PE477 & PE486 cruises"
+  )+
+  facet_grid(. ~ Viruses,
+             scale = 'free')+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90),
+        strip.background = element_rect(fill = "#202a47"),
+        strip.text = element_text(color = 'white',
+                                  size = 10,
+                                  face = 'bold'),
+        legend.title = element_text(face = 'bold'),
+        axis.text = element_text(face = 'bold')
+  )
+
+#VBR####
+
+ggplot(data = pe_df,
+       aes(x = as.factor(Sample_Index),
+           y = VBR,
+           #color = as.factor(Viruses),
+           color = Location,
+           shape = Location)) +
+  geom_hline(yintercept = 0,
+             size = 1,
+             alpha = 0.2)+
+  geom_point(size = 2)+
+  geom_text(aes(label = round(VBR, 1)), vjust = 1.5, size = 4) + 
+  expand_limits(y = -2)+
+  scale_color_aaas()+
+  guides(fill = F)+
+  xlab("Station Number")+
+  ylab("VBR")+
+  labs(title = "Virus bacterium ratio - PE477 & PE486 cruises"
+  )+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90),
+        strip.background = element_rect(fill = "#202a47"),
+        strip.text = element_text(color = 'white',
+                                  size = 10,
+                                  face = 'bold'),
+        legend.title = element_text(face = 'bold'),
+        axis.text = element_text(face = 'bold')
+        
+  )
+
+#VP ####
+
+vp_df<- pe_df %>%
+  select(all_of(c(common, 'VP_Lytic', 'VP_Lysogenic'))) %>%
+  pivot_longer(cols = c('VP_Lytic', 'VP_Lysogenic'),
+                 names_to = 'Sample_Type',
+               names_prefix = 'VP_',
+               values_to = 'vp_value')
+ 
+ggplot(data = vp_df,
+       aes(x = as.factor(Sample_Index),
+           y = vp_value/1e+6,
+           color = Location,
+           shape = Location)) +
+  geom_hline(yintercept = 0,
+             size = 1,
+             alpha = 0.2)+
+  geom_point(size = 2)+
+  geom_text(aes(label = round(vp_value/1e+6, 3)), hjust = 1.5, size = 4, angle = 90) + 
+  expand_limits(y = -0.5)+
+  scale_color_aaas()+
+  guides(fill = F)+
+  xlab("Station Number")+
+  ylab("Viral Production Rate (in million viruses per mL per hour)")+
+  labs(title = "Viral Production rate (Lytic & Lysogenic) - PE477 & PE486 cruises"
+  )+
+  facet_grid(. ~ Sample_Type )+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90),
+        strip.background = element_rect(fill = "#202a47"),
+        strip.text = element_text(color = 'white',
+                                  size = 10,
+                                  face = 'bold'),
+        legend.title = element_text(face = 'bold'),
+        axis.text = element_text(face = 'bold')
+        
+  )
+#VP_abs ####
+
+abs_vp_df<- pe_df %>%
+  select(all_of(c(common, 'abs_VP_Lytic', 'abs_VP_Lysogenic'))) %>%
+  pivot_longer(cols = c('abs_VP_Lytic', 'abs_VP_Lysogenic'),
+               names_to = 'Sample_Type',
+               names_prefix = 'abs_VP_',
+               values_to = 'abs_vp_value')
+
+ggplot(data = abs_vp_df,
+       aes(x = as.factor(Sample_Index),
+           y = abs_vp_value/1e+6,
+           color = Location,
+           shape = Location)) +
+  geom_hline(yintercept = 0,
+             size = 1,
+             alpha = 0.2)+
+  geom_point(size = 2)+
+  geom_text(aes(label = round(abs_vp_value/1e+6, 3)), hjust = 1.5, size = 4, angle = 90) + 
+  expand_limits(y = -1)+
+  scale_color_aaas()+
+  guides(fill = F)+
+  xlab("Station Number")+
+  ylab("Absolute Viral Production (in million viruses per mL)")+
+  labs(title = "Absolute Viral Production (Lytic & Lysogenic) - PE477 & PE486 cruises"
+  )+
+  facet_grid(. ~ Sample_Type )+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90),
+        strip.background = element_rect(fill = "#202a47"),
+        strip.text = element_text(color = 'white',
+                                  size = 10,
+                                  face = 'bold'),
+        legend.title = element_text(face = 'bold'),
+        axis.text = element_text(face = 'bold')
+        
+  )
+
+#Need to plot % of bacteria lost due to lytic and lysogenic production
+
+#####MAPS####
+
+#Basic plot with lats and longs first 
+#Aa our statiosn are close to eachother. We'll add jitter/nudeg position for the labels.
+pe_df<- pe_df %>%
+  mutate(nudge_lat = Latitude - 0.1,
+         nudge_long = Longitude)
+
+
+pe_df[pe_df$Sample_Index == 'PE486_6',][,c('nudge_lat', 'nudge_long')]<- c(55.3, 1.55)
+pe_df[pe_df$Sample_Index == 'PE486_7',][,c('nudge_lat', 'nudge_long')]<- c(55.2, 1.9)
+
+
+# Get the bounding box (range) of your data
+bbox <- make_bbox(lon = pe_df$Longitude, lat = pe_df$Latitude, f = 0.6)  # f is the added margin
+
+# Retrieve the map
+map_data <- get_map(location = bbox, source = "stamen", maptype = "toner-lite", zoom = 7)
+
+# Plot the data on the map
+ggmap(map_data) +
+  geom_segment(data = pe_df  %>%
+                 dplyr::filter(Sample_Index %in% c('PE486_6', 'PE486_7')), aes(x = Longitude, y = Latitude, xend = nudge_long, yend = nudge_lat), color = "grey30", size = 0.5) +
+  geom_point(data = pe_df, 
+             aes(x = Longitude, y = Latitude, color = Location), size = 2.5, alpha = 0.5) +
+  geom_text(data = pe_df %>%
+              dplyr::filter(!Sample_Index %in% c('PE486_6', 'PE486_7')),
+            aes(x = nudge_long, y = nudge_lat, label = as.character(Station_Number)), vjust = "bottom", size = 3) +
+  geom_text(data = pe_df %>%
+              dplyr::filter(Sample_Index %in% c('PE486_6', 'PE486_7')),
+            aes(x = nudge_long, y = nudge_lat, label = as.character(Station_Number)), vjust = "bottom", size = 3) +
+  scale_color_aaas()+
+  labs(title = "PE477 & PE486 Sampling Stations")+
+  xlab("Longitude")+
+  ylab("Latitude")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90),
+        strip.background = element_rect(fill = "#202a47"),
+        strip.text = element_text(color = 'white',
+                                  size = 10,
+                                  face = 'bold'),
+        legend.title = element_text(face = 'bold'),
+        axis.text = element_text(face = 'bold')
+        
+  )
+
+####Add Bathymetry from emodnet ####
+
+bathy_raster_NorthSea <- raster::raster("Mean_depth_in_multi_colour_no_land.geotif")
+bathy_agg <- aggregate(bathy_raster_NorthSea, fact = 10)
+writeRaster(bathy_agg, 'NorthSea_bathymetry_raster_EMODnet.geotif')
+
+ggmap(map_data) +
+  geom_contour(data = as.data.frame(rasterToPoints(bathy_agg)), 
+               aes(), color = "blue") +
+  geom_segment(data = pe_df  %>%
+                 dplyr::filter(Sample_Index %in% c('PE486_6', 'PE486_7')), aes(x = Longitude, y = Latitude, xend = nudge_long, yend = nudge_lat), color = "grey30", size = 0.5) +
+  geom_point(data = pe_df, 
+             aes(x = Longitude, y = Latitude, color = Location), size = 2.5, alpha = 0.5) +
+  geom_text(data = pe_df %>%
+              dplyr::filter(!Sample_Index %in% c('PE486_6', 'PE486_7')),
+            aes(x = nudge_long, y = nudge_lat, label = as.character(Station_Number)), vjust = "bottom", size = 3) +
+  geom_text(data = pe_df %>%
+              dplyr::filter(Sample_Index %in% c('PE486_6', 'PE486_7')),
+            aes(x = nudge_long, y = nudge_lat, label = as.character(Station_Number)), vjust = "bottom", size = 3) +
+  scale_color_aaas()+
+  labs(title = "PE477 & PE486 Sampling Stations")+
+  xlab("Longitude")+
+  ylab("Latitude")+
+  theme_bw()+
+  theme(axis.text.x = element_text(angle = 90),
+        strip.background = element_rect(fill = "#202a47"),
+        strip.text = element_text(color = 'white',
+                                  size = 10,
+                                  face = 'bold'),
+        legend.title = element_text(face = 'bold'),
+        axis.text = element_text(face = 'bold')
+        
+  )
+
+#cheecking if they have the saem coordinate systems
+crs(bathy_raster_NorthSea)
+st_crs()
+#Adding grobs for different variables on map
+
+#we'll have to adjust thenudge position accordingly later.
+
+#for nutrients, a barchart with values on them would be good
+#lets subset one station to get strted
+sdf_nuts<- nuts_df %>%
+  dplyr:: filter(Sample_Index == 'PE477_1')
+
+
+ggplot(data = sdf_nuts,
+       aes(x = Nutrients,
+           y = Nutrients_value,
+           fill = Nutrients)) +
+  geom_bar(stat = 'identity')+
+  scale_fill_aaas()+
+  ylab("value (uM)")+
+  theme_classic()
