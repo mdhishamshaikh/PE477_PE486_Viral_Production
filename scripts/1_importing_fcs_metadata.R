@@ -222,3 +222,16 @@ cytoplot(index = 7)
 #Let's get the stats out
 
 get_bv_stats()
+
+
+#Import csv
+counts<- read.csv("./PE_Cruises/results/PE_Cruises_counts.csv")
+str(counts)
+
+
+combine_metadata_counts(metadata_df = metadata, counts_df = counts)
+calc_TE(df = counts_metadata)
+adjust_TE(counts_metadata_df = counts_metadata_TE)
+
+
+counts_per_mL<- read.csv("./PE_Cruises/results/PE_Cruises_per_mL.csv")

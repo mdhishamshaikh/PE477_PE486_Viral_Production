@@ -70,7 +70,7 @@ metadata_processing<- function(file_path, extension = ".xlsx", sheet =NULL, proj
   }
   
   metadata<- metadata[, c('Sample_Name', 'Staining_Protocol', 'Date_Measurement', 
-                          'Location', 'Expt_Date', 'Expt_No', 'Depth', 
+                          'Location', 'Expt_Date', 'Station_Number', 'Depth', 
                           'Sample_Type', 'Timepoint', 'Replicate', 'Acquisition_Duration',
                           'Dilution', 'Flowrate')] %>%
     mutate(Sample_Index = row_number(),
@@ -706,14 +706,14 @@ adjust_TE<- function(counts_metadata_df = counts_metadata, write_csv = T){
     
     otpt_df<- counts_metadata2[counts_metadata2$Sample_Type != 'TE',]
     otpt_df<- otpt_df[, c('Sample_Name', 'Staining_Protocol', 'Expt_Date', 'Date_Measurement',
-                          'Location', 'Expt_No', 'Depth', 'Sample_Type', 'Timepoint', 'Replicate', 'c_Bacteria', 'c_HNA', 'c_LNA', 
+                          'Location', 'Station_Number', 'Depth', 'Sample_Type', 'Timepoint', 'Replicate', 'c_Bacteria', 'c_HNA', 'c_LNA', 
                           'c_Viruses', 'c_V1', 'c_V2', 'c_V3', 'VBR', 'HNAperLNA')]
     otpt_df<- otpt_df[
       with(otpt_df,
            order(
              otpt_df[, 'Staining_Protocol'],
              otpt_df[, 'Location'],
-             otpt_df[, 'Expt_No'],
+             otpt_df[, 'Station_Number'],
              otpt_df[, 'Depth'],
              otpt_df[, 'Timepoint'],
              otpt_df[, 'Replicate'],
@@ -730,8 +730,8 @@ adjust_TE<- function(counts_metadata_df = counts_metadata, write_csv = T){
   
 }
 
-bacterial_count_overview_plots<- function(data){
-  plot1<- ggplot(data = NJ2020, aes(x = Sample_Type, y = c_Bacteria, col = as.factor(Expt_No), group = interaction(Sample_Type,Expt_No)))+
+bacterial_count_overview_plots<- function(data= NJ2020){
+  plot1<- ggplot(data, aes(x = Sample_Type, y = c_Bacteria, col = as.factor(Station_Number), group = interaction(Sample_Type,Station_Number)))+
     geom_violin(aes(group = Sample_Type, fill = Sample_Type), alpha = 0.15, color = NA)+
     labs(fill = "Sample Type")+
     scale_fill_lancet()+
@@ -750,8 +750,8 @@ bacterial_count_overview_plots<- function(data){
   ggsave("./results/TotalBacteria_perSampleType.svg", width = 20, height = 20, units = "cm")
   
   
-  plot2<- ggplot(data = NJ2020, aes(x = as.factor(Expt_No), y = c_Bacteria, col = as.factor(Sample_Type), group = interaction(Sample_Type,Expt_No)))+
-    geom_violin(aes(group = as.factor(Expt_No), fill = as.factor(Expt_No)), alpha = 0.25, color = NA)+
+  plot2<- ggplot(data, aes(x = as.factor(Station_Number), y = c_Bacteria, col = as.factor(Sample_Type), group = interaction(Sample_Type,Station_Number)))+
+    geom_violin(aes(group = as.factor(Station_Number), fill = as.factor(Station_Number)), alpha = 0.25, color = NA)+
     labs(fill = "Expt No")+
     scale_fill_lancet()+
     geom_boxplot( fill = 'white', outlier.alpha =0)+
@@ -770,8 +770,8 @@ bacterial_count_overview_plots<- function(data){
   
 }
 
-viral_count_overview_plots<- function(data){
-  plot1<- ggplot(data = NJ2020, aes(x = Sample_Type, y = c_Viruses, col = as.factor(Expt_No), group = interaction(Sample_Type,Expt_No)))+
+viral_count_overview_plots<- function(data = NJ2020){
+  plot1<- ggplot(data, aes(x = Sample_Type, y = c_Viruses, col = as.factor(Station_Number), group = interaction(Sample_Type,Station_Number)))+
     geom_violin(aes(group = Sample_Type, fill = Sample_Type), alpha = 0.15, color = NA)+
     labs(fill = "Sample Type")+
     scale_fill_lancet()+
@@ -789,8 +789,8 @@ viral_count_overview_plots<- function(data){
   print(plot1)
   ggsave("./results/TotalViruses_perSampleType.svg", width = 20, height = 20, units = "cm")
   
-  plot2<- ggplot(data = NJ2020, aes(x = as.factor(Expt_No), y = c_Viruses, col = as.factor(Sample_Type), group = interaction(Sample_Type,Expt_No)))+
-    geom_violin(aes(group = as.factor(Expt_No), fill = as.factor(Expt_No)), alpha = 0.25, color = NA)+
+  plot2<- ggplot(data, aes(x = as.factor(Station_Number), y = c_Viruses, col = as.factor(Sample_Type), group = interaction(Sample_Type,Station_Number)))+
+    geom_violin(aes(group = as.factor(Station_Number), fill = as.factor(Station_Number)), alpha = 0.25, color = NA)+
     labs(fill = "Expt No")+
     scale_fill_lancet()+
     geom_boxplot( fill = 'white', outlier.alpha =0)+
