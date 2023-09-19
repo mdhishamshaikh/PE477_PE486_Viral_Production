@@ -3,6 +3,7 @@ library(leaflet)
 library(ggsci)
 library(ggmap)
 library(sf)
+library(cowplot)
 
 pe_df<- read.csv("./PE_Cruises/results/PE_Cruises_viral_production/vp_abundance_nutrients_ts.csv")
 pe_df <- pe_df %>%
@@ -315,17 +316,19 @@ bbox <- make_bbox(lon = pe_df$Longitude, lat = pe_df$Latitude, f = 0.6)  # f is 
 map_data <- get_map(location = bbox, source = "stamen", maptype = "toner-lite", zoom = 7)
 
 # Plot the data on the map
-ggmap(map_data) +
+pe_map<-ggmap(map_data) +
   geom_segment(data = pe_df  %>%
-                 dplyr::filter(Sample_Index %in% c('PE486_6', 'PE486_7')), aes(x = Longitude, y = Latitude, xend = nudge_long, yend = nudge_lat), color = "grey30", size = 0.5) +
+                 dplyr::filter(Sample_Index %in% c('PE486_6', 'PE486_7')), 
+               aes(x = Longitude, y = Latitude, xend = nudge_long, yend = nudge_lat), 
+               color = "grey30", linewidth = 0.5) +
   geom_point(data = pe_df, 
              aes(x = Longitude, y = Latitude, color = Location), size = 2.5, alpha = 0.5) +
   geom_text(data = pe_df %>%
               dplyr::filter(!Sample_Index %in% c('PE486_6', 'PE486_7')),
-            aes(x = nudge_long, y = nudge_lat, label = as.character(Station_Number)), vjust = "bottom", size = 3) +
+            aes(x = nudge_long, y = nudge_lat, label = as.character(Station_Number)), vjust = "bottom", size = 5) +
   geom_text(data = pe_df %>%
               dplyr::filter(Sample_Index %in% c('PE486_6', 'PE486_7')),
-            aes(x = nudge_long, y = nudge_lat, label = as.character(Station_Number)), vjust = "bottom", size = 3) +
+            aes(x = nudge_long, y = nudge_lat, label = as.character(Station_Number)), vjust = "bottom", size = 5) +
   scale_color_aaas()+
   labs(title = "PE477 & PE486 Sampling Stations")+
   xlab("Longitude")+
@@ -340,16 +343,25 @@ ggmap(map_data) +
         axis.text = element_text(face = 'bold')
         
   )
-
+pe_map
 ####Add Bathymetry from emodnet ####
 
 bathy_raster_NorthSea <- raster::raster("Mean_depth_in_multi_colour_no_land.geotif")
 bathy_agg <- aggregate(bathy_raster_NorthSea, fact = 10)
-writeRaster(bathy_agg, 'NorthSea_bathymetry_raster_EMODnet.geotif')
+writeRaster(bathy_agg, 'NorthSea_bathymetry_raster_EMODnet.geotif', format = 'GTiff')
+bathy_agg<- raster::raster("")
+bathy_agg <- raster::raster("NorthSea_bathymetry_raster_EMODnet.tif")
+
+# Get the bounding box (range) of your data
+bbox <- make_bbox(lon = pe_df$Longitude, lat = pe_df$Latitude, f = 0.6)  # f is the added margin
+
+# Retrieve the map
+map_data <- get_map(location = bbox, source = "stamen", maptype = "toner-lite", zoom = 7)
+
 
 ggmap(map_data) +
   geom_contour(data = as.data.frame(rasterToPoints(bathy_agg)), 
-               aes(), color = "blue") +
+               aes(x = x,  y = y, layer = bathy_agg), color = "blue") +
   geom_segment(data = pe_df  %>%
                  dplyr::filter(Sample_Index %in% c('PE486_6', 'PE486_7')), aes(x = Longitude, y = Latitude, xend = nudge_long, yend = nudge_lat), color = "grey30", size = 0.5) +
   geom_point(data = pe_df, 
@@ -385,7 +397,7 @@ st_crs()
 #for nutrients, a barchart with values on them would be good
 #lets subset one station to get strted
 sdf_nuts<- nuts_df %>%
-  dplyr:: filter(Sample_Index == 'PE477_1')
+  dplyr:: filter(Sample_Index == 'PE477_1') 
 
 
 ggplot(data = sdf_nuts,
@@ -395,4 +407,125 @@ ggplot(data = sdf_nuts,
   geom_bar(stat = 'identity')+
   scale_fill_aaas()+
   ylab("value (uM)")+
-  theme_classic()
+  theme_classic()+
+  theme(legend.position = 'none')
+
+unique_samples <- unique(nuts_df$Sample_Index)
+plots_nuts <- vector("list", length(unique_samples))
+
+# Determine the global y-axis maximum limit
+global_ymax <- max(nuts_df$Nutrients_value, na.rm = TRUE)
+
+for (i in seq_along(unique_samples)) {
+  nut <- unique_samples[i]
+  
+  nuts_plot <- ggplot(data = nuts_df %>% 
+                        dplyr::filter(Sample_Index == nut),
+                      aes(x = Nutrients,
+                          y = Nutrients_value,
+                          fill = Nutrients)) +
+    geom_bar(stat = 'identity',
+             width = 0.7,
+             position = position_dodge(width = 0.05)) +
+    geom_text(aes(label = sprintf("%.2f", Nutrients_value)), vjust = -0.5, size = 3) +  # Display values with 2 decimal places
+    scale_fill_aaas() +
+   # ylab("value (uM)") +
+    ylim(0, global_ymax + 1) + 
+    theme_classic() +
+    theme(legend.position = 'none',
+          axis.title = element_blank(),
+          axis.text.x = element_blank(),
+          plot.background = element_blank(),
+          panel.background = element_blank())+
+    coord_fixed(ratio = 0.5)
+  
+  plots_nuts[[i]] <- nuts_plot
+}
+plots_nuts[[7]]
+
+# Assuming you've created bbox using the make_bbox() function
+bbox <- make_bbox(lon = pe_df$Longitude, lat = pe_df$Latitude, f = 0.6)
+
+# Convert the numeric vector to a named list
+bbox <- list(
+  left = bbox[1],
+  bottom = bbox[2],
+  right = bbox[3],
+  top = bbox[4]
+)
+
+# Function to add an inset plot to a given map
+add_plot_to_map <- function(main_plot, inset_plot, x, y, width = 0.2, height = 0.2) {
+  print(paste("Placing plot at coordinates:", x, y))
+  vp <- grid::viewport(width = width, height = height, x = x, y = y, just = c("center", "center"))
+  print(inset_plot, vp = vp)
+  return(main_plot)
+}
+
+
+# Updated script to overlay each nutrient plot
+plot_data <- nuts_df %>%
+  distinct(Sample_Index) %>%
+  left_join(pe_df, by = "Sample_Index") %>%
+  mutate(Plot = plots_nuts)
+
+# Overlay each nutrient plot on the main map
+final_nuts_plot <- purrr::reduce(
+  seq_along(plots_nuts),
+  function(p, i) {
+    add_plot_to_map(p, plot_data$Plot[[i]], plot_data$nudge_long[i], plot_data$nudge_lat[i], width = 1, height = 1)
+  },
+  .init = pe_map
+)
+
+print(final_nuts_plot)
+
+
+#PCA####
+
+subset_pe_df <- pe_df %>%
+  select(-all_of(c('Location', 'Station_Number',
+  'Depth', 'Time_Range', 'Population',
+                   'Bacterial_Sample_Name', 'Viral_Sample_Name',
+                   'Expt_Date', 'Latitude', 'Longitude',
+                   'nudge_lat', 'nudge_long', 'Sample_Index',
+  'Temperature', 'Salinity', 'Nitrate', 'Total_Bacteria', 'Total_Viruses', 'VBR'))) 
+
+cols_to_check <- c("TON", "Nitrite", "Phosphate", "Silicate")
+
+# Check for negative values and replace with 0
+for (col in cols_to_check) {
+  subset_pe_df[[col]][subset_pe_df[[col]] < 0] <- 0
+}
+
+#to handle missing values
+# Impute the data
+imputed_data <- mice(subset_pe_df, m=5, maxit=50, method='pmm', seed=500)
+completed_data <- complete(imputed_data, action = 1)
+scaled_data <- scale(subset_pe_df)
+pca_result <- prcomp(scaled_data, center = TRUE, scale. = TRUE)
+
+# Scree Plot
+explained_var <- pca_result$sdev^2 / sum(pca_result$sdev^2) * 100
+barplot(explained_var, main = "Scree Plot", 
+        xlab = "Principal Component", ylab = "Percentage of Variance Explained",
+        ylim = c(0, max(explained_var) + 10), col = "steelblue")
+biplot(pca_result, main = "PCA Biplot", cex = 0.7)
+
+scores <- data.frame(pca_result$x[, 1:2])
+scores$Sample_Index <- pe_df$Sample_Index
+scores$Location<- pe_df$Location
+scores$Station_Number<- pe_df$Station_Number
+
+loadings <- data.frame(pca_result$rotation[, 1:2])
+
+
+ggplot(scores, aes(x = PC1, y = PC2, color = Location)) +
+  geom_segment(aes(x = 0, y = 0, xend = 10*PC1, yend = 10*PC2), data = loadings, arrow = arrow(type = "closed", length = unit(0.2, "cm")), alpha = 0.5, color = "black") +
+  geom_text(data = loadings, aes(x = 10*PC1, y = 10*PC2, label = rownames(loadings)), color = "black")+
+  geom_point(aes(), size = 3) + 
+  scale_color_aaas()+
+  geom_text(aes(label = Station_Number), vjust = -0.5, hjust = 1) +
+  labs(title = "PCA Plot", x = "PC1", y = "PC2") +
+  theme_bw()
+

@@ -10,3 +10,5 @@ Data/
 PE_Cruises/results/*plot*
 
 *geotif
+*.gri
+*.grd
