@@ -59,39 +59,41 @@ metadata_processing(paste0(getwd(),"/Metadata/PE_Cruises_VP_Metadata.xlsx"), ext
 # } else {
 #   cat("Source file does not exist.\n")
 # }
+# 
+# 
+#TO IMPORT FILES FROM DIFFERENT FOLDERS INTO DATA FOLDER
 
-
-for (sample in 1:length(metadata$Sample_Name)){
-  print(metadata$Sample_Name[sample])
-  file.copy(from = paste0(fcs_dir2, metadata$Sample_Name[sample]),
-            to = paste0(work_dir, "/data/raw_data/"),
-            recursive = T)
-}
-
-origin<- "C:/Users/hisham.shaikh/OneDrive - UGent/PE477_PE486_Viral_Production/Data/"
-missing_fcs_file <- character(0)  # Initialize an empty vector for missing files
-
-for (sample in seq_along(metadata$Sample_Name)) {
-  source_file <- file.path(fcs_dir, metadata$Sample_Name[sample])
-  destination_file <- file.path(work_dir, "data/raw_data", metadata$Sample_Name[sample])
-  
-  file.copy(from = source_file, to = destination_file)
-  
-  if (!file.exists(destination_file)) {
-    missing_fcs_file <- c(missing_fcs_file, metadata$Sample_Name[sample])
-  }
-}
-
-
-
-if (length(missing_fcs_file) > 0) {
-  print("Missing files. Check `missing_fcs_file`")
-  print(missing_fcs_file)
-} else {
-  print("All files were transferred.")
-}
-
-
+# for (sample in 1:length(metadata$Sample_Name)){
+#   print(metadata$Sample_Name[sample])
+#   file.copy(from = paste0(fcs_dir2, metadata$Sample_Name[sample]),
+#             to = paste0(work_dir, "/data/raw_data/"),
+#             recursive = T)
+# }
+# 
+# origin<- "C:/Users/hisham.shaikh/OneDrive - UGent/PE477_PE486_Viral_Production/Data/"
+# missing_fcs_file <- character(0)  # Initialize an empty vector for missing files
+# 
+# for (sample in seq_along(metadata$Sample_Name)) {
+#   source_file <- file.path(fcs_dir, metadata$Sample_Name[sample])
+#   destination_file <- file.path(work_dir, "data/raw_data", metadata$Sample_Name[sample])
+#   
+#   file.copy(from = source_file, to = destination_file)
+#   
+#   if (!file.exists(destination_file)) {
+#     missing_fcs_file <- c(missing_fcs_file, metadata$Sample_Name[sample])
+#   }
+# }
+# 
+# 
+# 
+# if (length(missing_fcs_file) > 0) {
+#   print("Missing files. Check `missing_fcs_file`")
+#   print(missing_fcs_file)
+# } else {
+#   print("All files were transferred.")
+# }
+# 
+# 
 
 
 import_matching_files <- function(source_dir, dest_dir, metadata) {
@@ -116,11 +118,6 @@ import_matching_files <- function(source_dir, dest_dir, metadata) {
     }
   }
 }
-
-working_directory <- "C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/"
-source_directory <- "C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/Data/"
-destination_directory <- "C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/PE_Cruises/data/raw_data/"
-
 
 
 
@@ -231,7 +228,7 @@ str(counts)
 
 combine_metadata_counts(metadata_df = metadata, counts_df = counts)
 calc_TE(df = counts_metadata)
-adjust_TE(counts_metadata_df = counts_metadata_TE)
-
+adj_counts <- adjust_TE(counts_metadata_df = counts_metadata_TE)
+##### FIGIRE THIS PART UT. WHERE SOMEHOW 0.22 SAMPLES ARE NOT BEING SAVED IN THE CSV (check the source. I had to define the parth in the funcition. make it adaptive)
 
 counts_per_mL<- read.csv("./PE_Cruises/results/PE_Cruises_per_mL.csv")

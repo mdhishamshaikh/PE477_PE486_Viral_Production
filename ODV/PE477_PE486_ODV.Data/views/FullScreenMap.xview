@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<View xview="0.23" collection="PE477_PE486_ODV">
+<GeographicMap>
+<MapDomain lon_min="-8.86614" lat_max="58.87924" lat_min="50.10685" lon_max="12.45707"/>
+<MapLayerSeries name="GEBCO_2023_15sec">
+<LayerSet id="0">
+<Layer name="Borders_Marine"/>
+<Layer name="Borders_National"/>
+</LayerSet>
+<LayerSet id="1">
+<Layer name="Backgrd"/>
+<Layer name="90m"/>
+<Layer name="80m"/>
+<Layer name="70m"/>
+<Layer name="60m"/>
+<Layer name="50m"/>
+<Layer name="40m"/>
+<Layer name="30m"/>
+<Layer name="20m"/>
+<Layer name="10m"/>
+<Layer name="5m"/>
+</LayerSet>
+<LayerSet id="3">
+<Layer name="World" line_color="17"/>
+</LayerSet>
+</MapLayerSeries>
+</GeographicMap>
+<MapWindow>
+<Symbol color="1" type="0" size="-0.1" small_size="0.898778"/>
+<Annotation style="1" font_size="10"/>
+<Window>
+<Axis cb_align="1"/>
+<Geometry y_bottom="50.1069" y_top="58.8792" y_length_bb="17" x_left="-8.86614" y_offset_bb="2.5" x_right="12.4571" x_projection="100" y_projection="100" x_offset_bb="2" x_length_bb="24"/>
+</Window>
+</MapWindow>
+<PickedStations>
+<Station text_alignment="1" fill_color="1" frame_color="1" sequence_id="26" symbol_type="1" line_style="0" accession_number="107" frame_width="1" line_color="1"/>
+<Station text_alignment="1" fill_color="3" frame_color="3" sequence_id="12" symbol_type="2" line_style="0" accession_number="101" frame_width="1" line_color="3"/>
+<Station text_alignment="3" fill_color="6" frame_color="6" sequence_id="7" symbol_type="3" line_style="0" accession_number="115" frame_width="1" line_color="6"/>
+<Station text_alignment="3" fill_color="8" frame_color="8" sequence_id="23" symbol_type="4" line_style="0" accession_number="124" frame_width="1" line_color="8"/>
+<Station text_alignment="8" fill_color="0" frame_color="0" sequence_id="21" symbol_type="5" line_style="0" accession_number="122" frame_width="2" line_color="0"/>
+<Station text_alignment="5" fill_color="12" frame_color="12" sequence_id="24" symbol_type="6" line_style="0" accession_number="125" frame_width="2" line_color="12"/>
+<Station text_alignment="5" fill_color="2" frame_color="2" sequence_id="8" symbol_type="7" line_style="0" accession_number="116" frame_width="2" line_color="2"/>
+<Station text_alignment="5" fill_color="-1" frame_color="9" sequence_id="9" symbol_type="0" line_style="0" accession_number="117" frame_width="1" line_color="9"/>
+<Station text_alignment="8" fill_color="-1" frame_color="14" sequence_id="10" symbol_type="1" line_style="0" accession_number="118" frame_width="1" line_color="14"/>
+<Station text_alignment="2" fill_color="4" frame_color="0" sequence_id="22" symbol_type="2" line_style="0" accession_number="123" frame_width="1" line_color="5"/>
+<Station text_alignment="6" fill_color="-1" frame_color="13" sequence_id="11" symbol_type="3" line_style="0" accession_number="119" frame_width="1" line_color="13"/>
+<Station text_alignment="1" fill_color="4" frame_color="4" sequence_id="20" symbol_type="0" line_style="0" accession_number="121" frame_width="1" line_color="4"/>
+</PickedStations>
+<IsoSurfaceVariables>
+<!--VP_Lysogenic @ VP_Lytic=first-->
+<IsoVariable surface_value="first" surface_var_id="0" var_id="1"/>
+<!--abs_VP_Lytic @ VP_Lytic=first-->
+<IsoVariable surface_value="first" surface_var_id="0" var_id="2"/>
+<!--abs_VP_Lysogenic @ VP_Lytic=first-->
+<IsoVariable surface_value="first" surface_var_id="0" var_id="3"/>
+<!--Total_Bacteria @ VP_Lytic=first-->
+<IsoVariable surface_value="first" surface_var_id="0" var_id="4"/>
+</IsoSurfaceVariables>
+<CurrentSelection stationID="20" sampleID="0"/>
+</View>

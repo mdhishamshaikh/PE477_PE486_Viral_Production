@@ -9,6 +9,14 @@ PE_Cruises/data/raw_data/*
 Data/
 PE_Cruises/results/*plot*
 
+Data/*
+figures/*
+
 *geotif
 *.gri
 *.grd
+
+*.pptx"ODV/" 
+"PE_Cruises/" 
+"PE_Cruises2/" 
+"PE_Cruises_VP.pptx" 

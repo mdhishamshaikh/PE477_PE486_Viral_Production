@@ -1,0 +1,21 @@
+
+[Application Window]
+Status = 000000ff00000000fd000000010000000100000138000003c6fc0200000003fb00000016004300750072007200530074006100740069006f006e0100000016000001000000007400000100fb00000014004300750072007200530061006d0070006c0065010000011b000001bc00000075000002b0fb00000010004300750072007200490073006f007601000002dc0000010000000074000001bd000008c3000003c600000004000000040000000800000008fc00000000
+
+[Good Coverage]
+# Values = 4
+% Values = 5
+Gap Slope = 0.5
+Gap Upper Limit = 700
+Gap@minPrimVar = 175
+
+[Recent]
+ImageFile = C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/ODV/PE477_PE486_ODV_[view=FullScreenMap]_0_zoomed.png
+MapProperties_Page = 5
+Spreadsheet_ImportDir = C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/ODV
+StationFilter_Page = 0
+View = ~FullScreenMap.xview
+WinProperties_Page = 4
+
+[Window Settings]
+SynchronizeAxisRanges = 1

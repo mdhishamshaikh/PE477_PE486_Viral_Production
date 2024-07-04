@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<View xview="0.18" collection="analyzed_PE477_PE486_ODV">
+<GeographicMap>
+<MapDomain lat_min="-90" lon_max="117" lon_min="-243" lat_max="90"/>
+</GeographicMap>
+<MapWindow>
+<Symbol color="1" size="-0.1" small_size="0.1" type="0"/>
+<Window>
+<Geometry x_projection="100" y_projection="100" x_offset_bb="2" x_length_bb="24" y_offset_bb="2.5" y_length_bb="17" x_right="117" y_top="90" y_bottom="-90" x_left="-243"/>
+<GraphicsObjects>
+<GObject clipping="F" own_coordinates="F" post_data="T" type="1" dragging="T">
+<Annotation font_size="16" background_color="-1" frame_type="0" text_color="0" frame_color="-1" frame_width="0" angle="0" y_coordinate="17.0" x_coordinate="26.2" text_alignment="4" text="=collectionStationCount() Stations"/>
+</GObject>
+<GObject clipping="F" own_coordinates="F" post_data="T" type="1" dragging="T">
+<Annotation font_size="24" background_color="-1" frame_type="0" text_color="0" frame_color="-1" frame_width="0" angle="0" y_coordinate="17.0" x_coordinate="1.8" text_alignment="6" text="=collectionName()"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</MapWindow>
+<Canvas>
+<GraphicsObjects>
+<GObject dragging="T" type="1" clipping="F" own_coordinates="F" post_data="T">
+<Annotation y_coordinate="0.02" text="=collection()   -   =viewName()" font_size="7" frame_color="-1" text_color="8" text_alignment="6" frame_type="0" angle="0" background_color="-1" x_coordinate="0.25" frame_width="-1"/>
+</GObject>
+<GObject dragging="T" type="1" clipping="F" own_coordinates="F" post_data="T">
+<Annotation y_coordinate="0.02" text="=date()T=time()" font_size="7" frame_color="-1" text_color="8" text_alignment="4" frame_type="0" angle="0" background_color="-1" x_coordinate="29.5" frame_width="-1"/>
+</GObject>
+</GraphicsObjects>
+</Canvas>
+</View>

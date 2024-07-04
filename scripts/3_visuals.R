@@ -4,10 +4,11 @@ library(ggsci)
 library(ggmap)
 library(sf)
 library(cowplot)
+library(patchwork)
 
 pe_df<- read.csv("./PE_Cruises/results/PE_Cruises_viral_production/vp_abundance_nutrients_ts.csv")
 pe_df <- pe_df %>%
-  mutate(Sample_Index = factor(paste0(Location, "_", Station_Number)))
+  mutate(Sample_Index = factor(paste0(Location, "-", Station_Number)))
 
 #Let's define some categories.
 nutrients<- c("TON", "Nitrite", #'Nitrate', #remove nitrate as it is claculated using TON-Nitrite
@@ -152,7 +153,7 @@ vi_df<- pe_df %>%
   pivot_longer(cols = viruses,
                names_to = "Viruses",
                values_to = "Vi_abundance") %>%
-  mutate(Bacteria = factor(Viruses,
+  mutate(Viruses = factor(Viruses,
                            levels = viruses,
                            labels = c("Total Viruses",
                                       "V1 Viruses", "V2 Viruses",
@@ -529,3 +530,465 @@ ggplot(scores, aes(x = PC1, y = PC2, color = Location)) +
   labs(title = "PCA Plot", x = "PC1", y = "PC2") +
   theme_bw()
 
+
+#Downloading subplots to plot on INkscape ####
+
+#Nutrients - together ####
+
+sdf_nuts<- nuts_df %>%
+  dplyr:: filter(Sample_Index == 'PE477-1') 
+
+
+ggplot(data = sdf_nuts,
+       aes(x = Nutrients,
+           y = Nutrients_value,
+           fill = Nutrients)) +
+  geom_bar(stat = 'identity')+
+  scale_fill_aaas()+
+  ylab("value (uM)")+
+  theme_classic()+
+  theme(legend.position = 'right')
+
+unique_samples <- unique(nuts_df$Sample_Index)
+unique_nutrients<- unique(nuts_df$Nutrients)
+plots_nuts <- vector("list", length(unique_samples))
+
+# Determine the global y-axis maximum limit
+global_ymax <- max(nuts_df$Nutrients_value, na.rm = TRUE)
+
+for (i in seq_along(unique_samples)) {
+  for (j in seq_along(unique_nutrients)) {
+    nut <- unique_samples[i]
+    nutrient <- unique_nutrients[j]
+  
+  nuts_plot <- ggplot(data = nuts_df %>% 
+                        dplyr::filter(Sample_Index == nut &
+                                        Nutrients == nutrient),
+                      aes(x = Nutrients,
+                          y = Nutrients_value,
+                          fill = Nutrients)) +
+    geom_bar(stat = 'identity',
+             width = 0.7,
+             position = position_dodge(width = 0.05)) +
+    geom_text(aes(label = sprintf("%.2f", Nutrients_value)), 
+              vjust = -0.5, size = 3,
+              fontface = 'bold') +  # Display values with 2 decimal places
+    labs(caption = unique_samples[i])+
+    scale_fill_aaas() +
+    # ylab("value (uM)") +
+    ylim(0, global_ymax + 1) + 
+    theme_void() +
+    theme(plot.caption = element_text(hjust = 0.5, face = "bold"),  
+          legend.position = 'none',
+          plot.caption.position = "plot")+
+    coord_fixed(ratio = 0.5)
+  
+  plots_nuts[[i]] <- nuts_plot
+  
+  filename <- paste0("figures/nuts_subplots/", nut, ".svg")  # Construct the filename using the current nut value
+  ggsave(filename, plot = nuts_plot, width = 5, height = 5, dpi = 96, unit = 'cm') 
+  }
+}
+
+#Nutrients separte ####
+
+
+#Nutrients - together ####
+nuts_df <- pe_df %>%
+  select(all_of(c(common, nutrients))) %>%
+  pivot_longer(cols = nutrients,
+               names_to = "Nutrients",
+               values_to = "Nutrients_value") %>%
+  mutate(Nutrients_value = ifelse(Nutrients_value <0, 0, Nutrients_value),
+         Nutrients = factor(Nutrients,
+                            levels = nutrients,
+                            labels = c("TON", "Nitrite", "Phosphate", "Silicate")))
+
+unique_samples <- unique(nuts_df$Sample_Index)
+unique_nutrients<- unique(nuts_df$Nutrients)
+plots_nuts <- vector("list", length(unique_samples))
+
+# Determine the global y-axis maximum limit
+global_ymax <- max(nuts_df$Nutrients_value, na.rm = TRUE)
+
+for (i in seq_along(unique_samples)) {
+  for (j in seq_along(unique_nutrients)) {
+    nut <- unique_samples[i]
+    nutrient <- unique_nutrients[j]
+    
+    nuts_plot <- ggplot(data = nuts_df %>% 
+                          dplyr::filter(Sample_Index == nut &
+                                          Nutrients == nutrient) 
+                        ,
+                        aes(x = Nutrients,
+                            y = Nutrients_value,
+                            fill = Nutrients)) +
+      geom_bar(stat = 'identity',
+               width = 1.5,
+               position = position_dodge(width = 0.05)) +
+      geom_text(aes(label = sprintf("%.2f", Nutrients_value)), 
+                vjust = -0.5, size = 3,
+                fontface = 'bold') +  # Display values with 2 decimal places
+     labs(caption = unique_samples[i])+
+      scale_fill_aaas() +
+      # ylab("value (uM)") +
+      ylim(0, global_ymax + 1) + 
+      theme_void() +
+      theme(plot.caption = element_text(hjust = 0.5, face = "bold"),  
+            legend.position = 'right',
+            plot.caption.position = "plot")+
+      coord_fixed(ratio = 0.5)
+    
+    plots_nuts[[i]] <- nuts_plot
+    
+    filename <- paste0("figures/nuts_subplots/", nut, "_", nutrient, ".svg")  # Construct the filename using the current nut value
+    #ggsave(filename, plot = nuts_plot, width = 5, height = 5, dpi = 96, unit = 'cm') 
+  }
+}
+
+
+#Temperature and salinity. individual graphs####
+
+ts_df
+unique_samples <- unique(ts_df$Sample_Index)
+unique_TS<- unique(ts_df$TS)
+plots_ts <- vector("list", length(unique_samples))
+
+# Determine the global y-axis maximum limit
+global_ymax <- max(ts_df$TS_Value, na.rm = TRUE)
+
+for (i in seq_along(unique_samples)) {
+  for (j in seq_along(unique_TS)) {
+    sample <- unique_samples[i]
+    ts <- unique_TS[j]
+    
+    ts_plot <- ggplot(data = ts_df %>% 
+                          dplyr::filter(Sample_Index == sample &
+                                          TS == ts) 
+                        ,
+                        aes(x = TS,
+                            y = TS_Value,
+                            fill = TS)) +
+      geom_bar(stat = 'identity',
+               width = 1,
+               position = position_dodge(width = 0.05)) +
+      geom_text(aes(label = sprintf("%.2f", TS_Value)), 
+                vjust = -0.5, size = 3,
+                fontface = 'bold') +  # Display values with 2 decimal places
+      # labs(caption = unique_samples[i])+
+      scale_fill_aaas() +
+      ylab("value (uM)") +
+      ylim(0, global_ymax + 1) + 
+      theme_void() +
+      theme(plot.caption = element_text(hjust = 0.5, face = "bold"),  
+            legend.position = 'none',
+            plot.caption.position = "plot")+
+      coord_fixed(ratio = 0.5)
+    
+    plots_ts[[i]] <- ts_plot
+    
+    filename <- paste0("figures/ts_subplots/", sample, "_", ts, ".svg")  # Construct the filename using the current nut value
+    ggsave(filename, plot = ts_plot, width = 5, height = 5, dpi = 96, unit = 'cm') 
+  }
+} #DOING THIS LATER
+
+ts_df
+unique_samples <- unique(ts_df$Sample_Index)
+unique_TS<- unique(ts_df$TS)
+plots_ts <- vector("list", length(unique_samples))
+
+# Determine the global y-axis maximum limit
+global_ymax <- max(ts_df$TS_Value, na.rm = TRUE)
+
+for (i in seq_along(unique_samples)) {
+  
+    sample <- unique_samples[i]
+    
+    
+    ts_plot <- ggplot(data = ts_df %>% 
+                        dplyr::filter(Sample_Index == sample),
+                      aes(x = TS,
+                          y = TS_Value,
+                          fill = TS)) +
+      geom_bar(stat = 'identity',
+               width = 0.7,
+               position = position_dodge(width = 0.1)
+               ) +
+      geom_text(aes(label = sprintf("%.2f", TS_Value)), 
+                vjust = -0.5, size = 3,
+                fontface = 'bold') +  # Display values with 2 decimal places
+      labs(caption = unique_samples[i])+
+      scale_fill_aaas() +
+      ylab("value (uM)") +
+      ylim(0, global_ymax + 1) + 
+      theme_void() +
+      theme(plot.caption = element_text(hjust = 0.5, face = "bold"),  
+            legend.position = 'none',
+            plot.caption.position = "plot")
+    
+    plots_ts[[i]] <- ts_plot
+    
+    filename <- paste0("figures/ts_subplots/", sample, ".svg")  # Construct the filename using the current nut value
+    ggsave(filename, plot = ts_plot, width = 5, height = 5, dpi = 96, unit = 'cm') 
+
+}
+
+#Bacteria #### map
+
+ba_df
+unique_samples <- unique(ba_df$Sample_Index)
+unique_Bacteria<- unique(ba_df$Bacteria)
+plots_ba <- vector("list", length(unique_samples))
+
+# Determine the global y-axis maximum limit
+global_ymax <- max(ba_df$Ba_abundance/1e+6, na.rm = TRUE)
+
+for (i in seq_along(unique_samples)) {
+  
+  sample <- unique_samples[i]
+  
+  
+  ba_plot <- ggplot(data = ba_df %>% 
+                      dplyr::filter(Sample_Index == sample),
+                    aes(x = Bacteria,
+                        y = Ba_abundance/1e+6,
+                        fill = Bacteria)) +
+    geom_bar(stat = 'identity',
+             width = 0.7,
+             position = position_dodge(width = 0.1)
+    ) +
+    geom_text(aes(label = sprintf("%.2f", Ba_abundance/1e+6)), 
+              vjust = -0.5, size = 3,
+              fontface = 'bold') +  # Display values with 2 decimal places
+    labs(caption = unique_samples[i])+
+    scale_fill_aaas() +
+    ylab("value (uM)") +
+    ylim(0, global_ymax + 1) + 
+    theme_void() +
+    theme(plot.caption = element_text(hjust = 0.5, face = "bold"),  
+          legend.position = 'none',
+          plot.caption.position = "plot")
+  
+  plots_ba[[i]] <- ba_plot
+  
+  filename <- paste0("figures/ba_subplots/", sample, ".svg")  # Construct the filename using the current nut value
+  ggsave(filename, plot = ba_plot, width = 5, height = 5, dpi = 96, unit = 'cm') 
+  
+}
+
+#Viruses #### map
+
+vi_df
+unique_samples <- unique(vi_df$Sample_Index)
+unique_Viruses<- unique(vi_df$Viruses)
+plots_vi <- vector("list", length(unique_samples))
+
+# Determine the global y-axis maximum limit
+global_ymax <- max(vi_df$Vi_abundance/1e+6, na.rm = TRUE)
+
+for (i in seq_along(unique_samples)) {
+  
+  sample <- unique_samples[i]
+  
+  
+  vi_plot <- ggplot(data = vi_df %>% 
+                      dplyr::filter(Sample_Index == sample),
+                    aes(x = Viruses,
+                        y = Vi_abundance/1e+6,
+                        fill = Viruses)) +
+    geom_bar(stat = 'identity',
+             width = 0.5,
+             position = position_dodge(width = 0.0)
+    ) +
+    geom_text(aes(label = sprintf("%.2f", Vi_abundance/1e+6)), 
+              vjust = -0.5, size = 3,
+              fontface = 'bold') +  # Display values with 2 decimal places
+    labs(caption = unique_samples[i])+
+    scale_fill_aaas() +
+    ylab("value (uM)") +
+    ylim(0, global_ymax + 1) + 
+    theme_void() +
+    theme(plot.caption = element_text(hjust = 0.5, face = "bold"),  
+          legend.position = 'none',
+          plot.caption.position = "plot")
+  
+  plots_vi[[i]] <- vi_plot
+  
+  filename <- paste0("figures/vi_subplots/", sample, ".svg")  # Construct the filename using the current nut value
+  ggsave(filename, plot = vi_plot, width = 5, height = 5, dpi = 96, unit = 'cm') 
+  
+}
+
+
+#VBR####
+
+pe_df
+unique_samples <- unique(pe_df$Sample_Index)
+plots_vbr <- vector("list", length(unique_samples))
+
+# Determine the global y-axis maximum limit
+global_ymax <- max(pe_df$VBR, na.rm = TRUE)
+
+for (i in seq_along(unique_samples)) {
+  
+  sample <- unique_samples[i]
+  
+  
+  vbr_plot <- ggplot(data = pe_df %>% 
+                      dplyr::filter(Sample_Index == sample),
+                    aes(x = 1,
+                        y = VBR)) +
+    geom_bar(stat = 'identity',
+             aes(width = 0.1),
+             position = position_dodge(width = 0.0),
+             fill = 'darkgreen'
+    ) +
+    geom_text(aes(label = sprintf("%.2f", VBR)), 
+              vjust = -0.5, size = 3,
+              fontface = 'bold') +  # Display values with 2 decimal places
+    labs(caption = unique_samples[i])+
+    scale_fill_aaas() +
+    ylab("value (uM)") +
+    ylim(0, global_ymax + 1) + 
+    theme_void() +
+    theme(plot.caption = element_text(hjust = 0.5, face = "bold"),  
+          legend.position = 'none',
+          plot.caption.position = "plot")
+  
+  plots_vbr[[i]] <- vbr_plot
+  
+  filename <- paste0("figures/vbr_subplots/", sample, ".svg")  # Construct the filename using the current nut value
+  ggsave(filename, plot = vbr_plot, width = 5, height = 5, dpi = 96, unit = 'cm') 
+  
+}
+
+## VP #### map
+vp_df<- pe_df %>%
+  select(all_of(c(common, 'VP_Lytic', 'VP_Lysogenic'))) %>%
+  pivot_longer(cols = c('VP_Lytic', 'VP_Lysogenic'),
+               names_to = 'Sample_Type',
+               names_prefix = 'VP_',
+               values_to = 'vp_value')
+
+unique_samples <- unique(vp_df$Sample_Index)
+
+plots_vp <- vector("list", length(unique_samples))
+
+# Determine the global y-axis maximum limit
+global_ymax <- max(vp_df$vp_value/1e+3, na.rm = TRUE)
+
+for (i in seq_along(unique_samples)) {
+  
+  sample <- unique_samples[i]
+  
+  
+  vp_plot <- ggplot(data = vp_df %>% 
+                      dplyr::filter(Sample_Index == sample),
+                    aes(x = Sample_Type,
+                        y = vp_value/1e+3,
+                        fill = Sample_Type)) +
+    geom_bar(stat = 'identity',
+             width = 0.5,
+             position = position_dodge(width = 0.0)
+    ) +
+    geom_text(aes(label = sprintf("%.2f", vp_value/1e+3)), 
+              vjust = -0.5, size = 3,
+              fontface = 'bold') +  # Display values with 2 decimal places
+    labs(caption = unique_samples[i])+
+    scale_fill_aaas() +
+    ylab("value (uM)") +
+    ylim(0, global_ymax + 1) + 
+    theme_void() +
+    theme(plot.caption = element_text(hjust = 0.5, face = "bold"),  
+          legend.position = 'right',
+          plot.caption.position = "plot")
+  
+  plots_vp[[i]] <- vp_plot
+  
+  filename <- paste0("figures/vp_subplots/", sample, ".svg")  # Construct the filename using the current nut value
+  #ggsave(filename, plot = vp_plot, width = 5, height = 5, dpi = 96, unit = 'cm') 
+  
+}
+
+
+## ABS VP #### map
+abs_vp_df<- pe_df %>%
+  select(all_of(c(common, 'VP_Lytic', 'VP_Lysogenic'))) %>%
+  pivot_longer(cols = c('VP_Lytic', 'VP_Lysogenic'),
+               names_to = 'Sample_Type',
+               names_prefix = 'VP_',
+               values_to = 'abs_vp_value')
+
+unique_samples <- unique(abs_vp_df$Sample_Index)
+
+plots_abs_vp <- vector("list", length(unique_samples))
+
+# Determine the global y-axis maximum limit
+global_ymax <- max(abs_vp_df$abs_vp_value/1e+3, na.rm = TRUE)
+
+for (i in seq_along(unique_samples)) {
+  
+  sample <- unique_samples[i]
+  
+  
+  abs_vp_plot <- ggplot(data = abs_vp_df %>% 
+                      dplyr::filter(Sample_Index == sample),
+                    aes(x = Sample_Type,
+                        y = abs_vp_value/1e+3,
+                        fill = Sample_Type)) +
+    geom_bar(stat = 'identity',
+             width = 0.5,
+             position = position_dodge(width = 0.0)
+    ) +
+    geom_text(aes(label = sprintf("%.2f", abs_vp_value/1e+3)), 
+              vjust = -0.5, size = 3,
+              fontface = 'bold') +  # Display values with 2 decimal places
+    labs(caption = unique_samples[i])+
+    scale_fill_aaas() +
+    ylab("value (uM)") +
+    ylim(0, global_ymax + 10) + 
+    theme_void() +
+    theme(plot.caption = element_text(hjust = 0.5, face = "bold"),  
+          legend.position = 'none',
+          plot.caption.position = "plot")
+  
+  plots_abs_vp[[i]] <- abs_vp_plot
+  
+  filename <- paste0("figures/abs_vp_subplots/", sample, ".svg")  # Construct the filename using the current nut value
+  ggsave(filename, plot = abs_vp_plot, width = 5, height = 5, dpi = 96, unit = 'cm') 
+  
+}
+
+#abs_VP vs VP
+
+global_min <- min(min(pe_df$VP_Lytic, na.rm = TRUE), min(pe_df$abs_VP_Lytic, na.rm = TRUE))
+global_max <- max(max(pe_df$VP_Lytic, na.rm = TRUE), max(pe_df$abs_VP_Lytic, na.rm = TRUE))
+
+vp_rate<- ggplot(data  = pe_df,
+       aes(x = VP_Lytic*24,
+       y = abs_VP_Lytic)) +
+  geom_point()+
+  theme_bw()+
+  geom_abline(slope = 1)+
+  geom_smooth(method = 'lm', color = 'maroon')+
+  xlim(global_min, global_max) +
+  ylim(global_min, global_max)
+
+vp_abs<- ggplot(data  = pe_df,
+       aes(x = VP_Lysogenic*24,
+           y = abs_VP_Lysogenic)) +
+  geom_point()+
+  theme_bw()+
+  geom_abline(slope = 1)+
+  geom_smooth(method = 'lm', color = 'maroon')+
+  xlim(global_min, global_max) +
+  ylim(global_min, global_max)
+
+vp_rate + vp_abs
+
+
+#Percent of BACTERIA LYSED
+
+
+
+  

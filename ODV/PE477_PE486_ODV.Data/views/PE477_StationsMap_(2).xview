@@ -1,0 +1,292 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<View collection="PE477_PE486_ODV" xview="0.23">
+<GeographicMap projection_type="1">
+<MapDomain lat_min="51.20719" lon_max="7.45029" lat_max="57.05116" lon_min="-3.18870"/>
+<ProjectionPole lat_center="54.17446" lon_center="2.13079"/>
+</GeographicMap>
+<MapWindow>
+<Symbol small_size="0.333333" size="-0.1" color="1" type="0"/>
+<Window>
+<Geometry x_offset_bb="1" x_left="-3.1887" x_right="7.45029" y_top="57.0512" y_bottom="51.2072" x_projection="100" y_length_bb="4" x_length_bb="6.8" y_projection="100" y_offset_bb="0.8"/>
+</Window>
+</MapWindow>
+<DataWindow>
+<AxisVariables>
+<!--Longitude-->
+<xAxis var_list="2" var_id="0" is_reversed="F"/>
+<!--Latitude-->
+<yAxis var_list="2" var_id="1" is_reversed="F"/>
+<!--VP_Lytic @ Station=first-->
+<zAxis var_list="2" var_id="20" is_reversed="F"/>
+</AxisVariables>
+<Modes window_type="0" plot_mode="2" window_mode="3"/>
+<Gridding auto_scale_lengths="T" y_scale_length="4.75845" draw_shaded="T" x_scale_length="4.55736"/>
+<BadEstimateHiding hide="T" max_distance="3"/>
+<DataMark size="1" color="17"/>
+<Window>
+<Geometry x_offset_bb="1" x_left="-3.1887" x_right="7.45029" y_top="57.0512" y_bottom="51.2072" x_projection="100" y_length_bb="3.7" x_length_bb="6.8" y_projection="100" y_offset_bb="15.5"/>
+<ColorScale z_range_start="0" z_range_end="400000"/>
+<GraphicsObjects>
+<GObject post_data="T" is_automatic="T" clipping="F" type="1" own_coordinates="F" dragging="F">
+<Annotation text_alignment="4" frame_type="0" y_coordinate="19.5344" frame_color="-1" x_coordinate="6.92959" font_size="7.89616" angle="0" text_color="0" background_color="-1" text="VP_Lytic @ Station=first" frame_width="-1"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Longitude-->
+<xAxis var_list="2" var_id="0" is_reversed="F"/>
+<!--Latitude-->
+<yAxis var_list="2" var_id="1" is_reversed="F"/>
+<!--VP_Lysogenic @ Station=first-->
+<zAxis var_list="2" var_id="21" is_reversed="F"/>
+</AxisVariables>
+<Modes window_type="0" plot_mode="2" window_mode="3"/>
+<Gridding auto_scale_lengths="T" y_scale_length="4.75845" draw_shaded="T" x_scale_length="4.55736"/>
+<BadEstimateHiding hide="T" max_distance="3"/>
+<DataMark size="1" color="17"/>
+<Window>
+<Geometry x_offset_bb="10.3" x_left="-3.1887" x_right="7.45029" y_top="57.0512" y_bottom="51.2072" x_projection="100" y_length_bb="3.7" x_length_bb="6.8" y_projection="100" y_offset_bb="15.5"/>
+<ColorScale z_range_start="0" z_range_end="420000"/>
+<GraphicsObjects>
+<GObject post_data="T" is_automatic="T" clipping="F" type="1" own_coordinates="F" dragging="F">
+<Annotation text_alignment="4" frame_type="0" y_coordinate="19.5344" frame_color="-1" x_coordinate="16.2296" font_size="7.89616" angle="0" text_color="0" background_color="-1" text="VP_Lysogenic @ Station=first" frame_width="-1"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Longitude-->
+<xAxis var_list="2" var_id="0" is_reversed="F"/>
+<!--Latitude-->
+<yAxis var_list="2" var_id="1" is_reversed="F"/>
+</AxisVariables>
+<Modes window_type="0" plot_mode="0" window_mode="3"/>
+<DataMark size="1" color="17"/>
+<Window>
+<Geometry x_offset_bb="19.6" x_left="-3.1887" x_right="7.45029" y_top="57.0512" y_bottom="51.2072" x_projection="100" y_length_bb="3.7" x_length_bb="6.8" y_projection="100" y_offset_bb="15.5"/>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Longitude-->
+<xAxis var_list="2" var_id="0" is_reversed="F"/>
+<!--Latitude-->
+<yAxis var_list="2" var_id="1" is_reversed="F"/>
+<!--LM_Lytic @ Station=first-->
+<zAxis var_list="2" var_id="22" is_reversed="F"/>
+</AxisVariables>
+<Modes window_type="0" plot_mode="2" window_mode="3"/>
+<Gridding auto_scale_lengths="T" y_scale_length="4.75845" draw_shaded="T" x_scale_length="4.55736"/>
+<BadEstimateHiding hide="T" max_distance="3"/>
+<DataMark size="1" color="17"/>
+<Window>
+<Geometry x_offset_bb="1" x_left="-3.1887" x_right="7.45029" y_top="57.0512" y_bottom="51.2072" x_projection="100" y_length_bb="3.7" x_length_bb="6.8" y_projection="100" y_offset_bb="10.6"/>
+<ColorScale z_range_start="0" z_range_end="170000"/>
+<GraphicsObjects>
+<GObject post_data="T" is_automatic="T" clipping="F" type="1" own_coordinates="F" dragging="F">
+<Annotation text_alignment="4" frame_type="0" y_coordinate="14.6344" frame_color="-1" x_coordinate="6.92959" font_size="7.89616" angle="0" text_color="0" background_color="-1" text="LM_Lytic @ Station=first" frame_width="-1"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Longitude-->
+<xAxis var_list="2" var_id="0" is_reversed="F"/>
+<!--Latitude-->
+<yAxis var_list="2" var_id="1" is_reversed="F"/>
+<!--LM_Lysogenic @ Station=first-->
+<zAxis var_list="2" var_id="23" is_reversed="F"/>
+</AxisVariables>
+<Modes window_type="0" plot_mode="2" window_mode="3"/>
+<Gridding auto_scale_lengths="T" y_scale_length="4.75845" draw_shaded="T" x_scale_length="4.55736"/>
+<BadEstimateHiding hide="T" max_distance="3"/>
+<DataMark size="1" color="17"/>
+<Window>
+<Geometry x_offset_bb="10.3" x_left="-3.1887" x_right="7.45029" y_top="57.0512" y_bottom="51.2072" x_projection="100" y_length_bb="3.7" x_length_bb="6.8" y_projection="100" y_offset_bb="10.6"/>
+<ColorScale z_range_start="0" z_range_end="140000"/>
+<GraphicsObjects>
+<GObject post_data="T" is_automatic="T" clipping="F" type="1" own_coordinates="F" dragging="F">
+<Annotation text_alignment="4" frame_type="0" y_coordinate="14.6344" frame_color="-1" x_coordinate="16.2296" font_size="7.89616" angle="0" text_color="0" background_color="-1" text="LM_Lysogenic @ Station=first" frame_width="-1"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Longitude-->
+<xAxis var_list="2" var_id="0" is_reversed="F"/>
+<!--Latitude-->
+<yAxis var_list="2" var_id="1" is_reversed="F"/>
+</AxisVariables>
+<Modes window_type="0" plot_mode="0" window_mode="3"/>
+<DataMark size="1" color="17"/>
+<Window>
+<Geometry x_offset_bb="19.6" x_left="-3.1887" x_right="7.45029" y_top="57.0512" y_bottom="51.2072" x_projection="100" y_length_bb="3.7" x_length_bb="6.8" y_projection="100" y_offset_bb="10.6"/>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Longitude-->
+<xAxis var_list="2" var_id="0" is_reversed="F"/>
+<!--Latitude-->
+<yAxis var_list="2" var_id="1" is_reversed="F"/>
+<!--TON @ Station=first-->
+<zAxis var_list="2" var_id="15" is_reversed="F"/>
+</AxisVariables>
+<Modes window_type="0" plot_mode="2" window_mode="3"/>
+<Gridding auto_scale_lengths="T" y_scale_length="4.75845" draw_shaded="T" x_scale_length="4.55736"/>
+<BadEstimateHiding hide="T" max_distance="3"/>
+<DataMark size="1" color="17"/>
+<Window>
+<Geometry x_offset_bb="1" x_left="-3.1887" x_right="7.45029" y_top="57.0512" y_bottom="51.2072" x_projection="100" y_length_bb="3.7" x_length_bb="6.8" y_projection="100" y_offset_bb="5.7"/>
+<ColorScale z_range_start="0" non_linearity_end="0.012" z_range_end="6.5" non_linearity_start="-0.188"/>
+<GraphicsObjects>
+<GObject post_data="T" is_automatic="T" clipping="F" type="1" own_coordinates="F" dragging="F">
+<Annotation text_alignment="4" frame_type="0" y_coordinate="9.73445" frame_color="-1" x_coordinate="6.92959" font_size="7.89616" angle="0" text_color="0" background_color="-1" text="TON @ Station=first" frame_width="-1"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Longitude-->
+<xAxis var_list="2" var_id="0" is_reversed="F"/>
+<!--Latitude-->
+<yAxis var_list="2" var_id="1" is_reversed="F"/>
+<!--Nitrite @ Station=first-->
+<zAxis var_list="2" var_id="16" is_reversed="F"/>
+</AxisVariables>
+<Modes window_type="0" plot_mode="2" window_mode="3"/>
+<Gridding auto_scale_lengths="T" y_scale_length="4.75845" draw_shaded="T" x_scale_length="4.55736"/>
+<BadEstimateHiding hide="T" max_distance="3"/>
+<DataMark size="1" color="17"/>
+<Window>
+<Geometry x_offset_bb="10.3" x_left="-3.1887" x_right="7.45029" y_top="57.0512" y_bottom="51.2072" x_projection="100" y_length_bb="3.7" x_length_bb="6.8" y_projection="100" y_offset_bb="5.7"/>
+<ColorScale z_range_start="0" z_range_end="0.15"/>
+<GraphicsObjects>
+<GObject post_data="T" is_automatic="T" clipping="F" type="1" own_coordinates="F" dragging="F">
+<Annotation text_alignment="4" frame_type="0" y_coordinate="9.73445" frame_color="-1" x_coordinate="16.2296" font_size="7.89616" angle="0" text_color="0" background_color="-1" text="Nitrite @ Station=first" frame_width="-1"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Longitude-->
+<xAxis var_list="2" var_id="0" is_reversed="F"/>
+<!--Latitude-->
+<yAxis var_list="2" var_id="1" is_reversed="F"/>
+<!--Nitrate @ Station=first-->
+<zAxis var_list="2" var_id="19" is_reversed="F"/>
+</AxisVariables>
+<Modes window_type="0" plot_mode="2" window_mode="3"/>
+<Gridding auto_scale_lengths="T" y_scale_length="4.75845" draw_shaded="T" x_scale_length="4.55736"/>
+<BadEstimateHiding hide="T" max_distance="3"/>
+<DataMark size="1" color="17"/>
+<Window>
+<Geometry x_offset_bb="19.6" x_left="-3.1887" x_right="7.45029" y_top="57.0512" y_bottom="51.2072" x_projection="100" y_length_bb="3.7" x_length_bb="6.8" y_projection="100" y_offset_bb="5.7"/>
+<ColorScale z_range_start="0" z_range_end="6.5"/>
+<GraphicsObjects>
+<GObject post_data="T" is_automatic="T" clipping="F" type="1" own_coordinates="F" dragging="F">
+<Annotation text_alignment="4" frame_type="0" y_coordinate="9.73445" frame_color="-1" x_coordinate="25.5296" font_size="7.89616" angle="0" text_color="0" background_color="-1" text="Nitrate @ Station=first" frame_width="-1"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Longitude-->
+<xAxis var_list="2" var_id="0" is_reversed="F"/>
+<!--Latitude-->
+<yAxis var_list="2" var_id="1" is_reversed="F"/>
+<!--Phosphate @ Station=first-->
+<zAxis var_list="2" var_id="17" is_reversed="F"/>
+</AxisVariables>
+<Modes window_type="0" plot_mode="2" window_mode="3"/>
+<Gridding auto_scale_lengths="T" y_scale_length="4.75845" draw_shaded="T" x_scale_length="4.55736"/>
+<BadEstimateHiding hide="T" max_distance="3"/>
+<DataMark size="1" color="17"/>
+<Window>
+<Geometry x_offset_bb="10.3" x_left="-3.1887" x_right="7.45029" y_top="57.0512" y_bottom="51.2072" x_projection="100" y_length_bb="3.7" x_length_bb="6.8" y_projection="100" y_offset_bb="0.8"/>
+<ColorScale z_range_start="0" z_range_end="0.5"/>
+<GraphicsObjects>
+<GObject post_data="T" is_automatic="T" clipping="F" type="1" own_coordinates="F" dragging="F">
+<Annotation text_alignment="4" frame_type="0" y_coordinate="4.83445" frame_color="-1" x_coordinate="16.2296" font_size="7.89616" angle="0" text_color="0" background_color="-1" text="Phosphate @ Station=first" frame_width="-1"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Longitude-->
+<xAxis var_list="2" var_id="0" is_reversed="F"/>
+<!--Latitude-->
+<yAxis var_list="2" var_id="1" is_reversed="F"/>
+<!--Silicate @ Station=first-->
+<zAxis var_list="2" var_id="18" is_reversed="F"/>
+</AxisVariables>
+<Modes window_type="0" plot_mode="2" window_mode="3"/>
+<Gridding auto_scale_lengths="T" y_scale_length="4.75845" draw_shaded="T" x_scale_length="4.55736"/>
+<BadEstimateHiding hide="T" max_distance="3"/>
+<DataMark size="1" color="17"/>
+<Window>
+<Geometry x_offset_bb="19.6" x_left="-3.1887" x_right="7.45029" y_top="57.0512" y_bottom="51.2072" x_projection="100" y_length_bb="3.7" x_length_bb="6.8" y_projection="100" y_offset_bb="0.8"/>
+<ColorScale z_range_start="0" z_range_end="0.5"/>
+<GraphicsObjects>
+<GObject post_data="T" is_automatic="T" clipping="F" type="1" own_coordinates="F" dragging="F">
+<Annotation text_alignment="4" frame_type="0" y_coordinate="4.83445" frame_color="-1" x_coordinate="25.5296" font_size="7.89616" angle="0" text_color="0" background_color="-1" text="Silicate @ Station=first" frame_width="-1"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<IsoSurfaceVariables>
+<!--Total_Bacteria @ Station=first-->
+<IsoVariable var_id="4" surface_value="first" surface_var_id="21"/>
+<!--Total_Viruses @ Station=first-->
+<IsoVariable var_id="7" surface_value="first" surface_var_id="21"/>
+<!--VBR @ Station=first-->
+<IsoVariable var_id="11" surface_value="first" surface_var_id="21"/>
+<!--HNA @ Station=first-->
+<IsoVariable var_id="5" surface_value="first" surface_var_id="21"/>
+<!--LNA @ Station=first-->
+<IsoVariable var_id="6" surface_value="first" surface_var_id="21"/>
+<!--VBR @ Station=first-->
+<IsoVariable var_id="11" surface_value="first" surface_var_id="21"/>
+<!--V1 @ Station=first-->
+<IsoVariable var_id="8" surface_value="first" surface_var_id="21"/>
+<!--V2 @ Station=first-->
+<IsoVariable var_id="9" surface_value="first" surface_var_id="21"/>
+<!--V3 @ Station=first-->
+<IsoVariable var_id="10" surface_value="first" surface_var_id="21"/>
+<!--Temperature @ Station=first-->
+<IsoVariable var_id="17" surface_value="first" surface_var_id="21"/>
+<!--Salinity @ Station=first-->
+<IsoVariable var_id="18" surface_value="first" surface_var_id="21"/>
+<!--TON @ Station=first-->
+<IsoVariable var_id="12" surface_value="first" surface_var_id="21"/>
+<!--Nitrite @ Station=first-->
+<IsoVariable var_id="13" surface_value="first" surface_var_id="21"/>
+<!--Phosphate @ Station=first-->
+<IsoVariable var_id="14" surface_value="first" surface_var_id="21"/>
+<!--Silicate @ Station=first-->
+<IsoVariable var_id="15" surface_value="first" surface_var_id="21"/>
+<!--Nitrate @ Station=first-->
+<IsoVariable var_id="16" surface_value="first" surface_var_id="21"/>
+<!--VP_Lytic @ Station=first-->
+<IsoVariable var_id="0" surface_value="first" surface_var_id="21"/>
+<!--VP_Lysogenic @ Station=first-->
+<IsoVariable var_id="1" surface_value="first" surface_var_id="21"/>
+<!--LM_Lytic @ Station=first-->
+<IsoVariable var_id="19" surface_value="first" surface_var_id="21"/>
+<!--LM_Lysogenic @ Station=first-->
+<IsoVariable var_id="20" surface_value="first" surface_var_id="21"/>
+</IsoSurfaceVariables>
+<StationSelectionCriteria>
+<Names cruise="PE477"/>
+</StationSelectionCriteria>
+<CurrentSelection sampleID="0" stationID="13"/>
+</View>

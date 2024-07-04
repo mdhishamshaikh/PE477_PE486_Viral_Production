@@ -1,0 +1,38 @@
+	-----File Import Start
+	
+	>>Collection:	C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/ODV/PE477_PE486_ODV
+	
+	Variables:
+		1: VP_Lytic	
+		2: VP_Lysogenic	
+		3: abs_VP_Lytic	
+		4: abs_VP_Lysogenic	
+		5: Total_Bacteria	
+		6: HNA	
+		7: LNA	
+		8: Total_Viruses	
+		9: V1	
+		10: V2	
+		11: V3	
+		12: VBR	
+		13: TON	
+		14: Nitrite	
+		15: Phosphate	
+		16: Silicate	
+		17: Nitrate	
+		18: Temperature	
+		19: Salinity	
+		20: LM_Lytic	
+		21: LM_Lysogenic	
+		22: Station	
+		23: Cruise	
+		24: Depth	
+	
+	ADD file: C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/ODV/pe477_vp.txt
+	7 station(s) processed successfully; 0 station(s) failed.
+	
+	
+	-----File Import End
+	
+	
+	IMPORT FILE SUMMARY: Total=1	Used=1	Errors=0	Warnings=0

@@ -1,0 +1,535 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<View collection="analyzed_PE477_PE486_ODV" xview="0.23">
+<GeographicMap>
+<MapDomain lon_max="4.53254" lat_min="52.77385" lon_min="-0.22562" lat_max="56.13284"/>
+</GeographicMap>
+<MapWindow>
+<Symbol small_size="0.1" color="1" size="-0.1" type="0"/>
+<Window>
+<Geometry y_top="56.1328" x_right="4.53254" x_projection="100" x_length_bb="3.5" y_length_bb="4.25" y_bottom="52.7739" y_offset_bb="0.45" y_projection="100" x_offset_bb="0.5" x_left="-0.225621"/>
+</Window>
+</MapWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lytic_LM_Total_DON_BS_25-->
+<xAxis var_list="1" var_id="109" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="16.4" x_offset_bb="1" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="1" angle="0" frame_color="-1" y_coordinate="20.15" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=110"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lytic_LM_DOP_B_BS_25-->
+<xAxis var_list="1" var_id="110" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="16.4" x_offset_bb="5.25" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="5.25" angle="0" frame_color="-1" y_coordinate="20.15" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=111"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lytic_LM_Total_DOP_BS_25-->
+<xAxis var_list="1" var_id="111" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="16.4" x_offset_bb="9.5" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="9.5" angle="0" frame_color="-1" y_coordinate="20.15" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=112"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lytic_LM_DOC_B_BS_40-->
+<xAxis var_list="1" var_id="112" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="16.4" x_offset_bb="13.75" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="13.75" angle="0" frame_color="-1" y_coordinate="20.15" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=113"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lytic_LM_Total_DOC_BS_40-->
+<xAxis var_list="1" var_id="113" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="16.4" x_offset_bb="18" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="18" angle="0" frame_color="-1" y_coordinate="20.15" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=114"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lytic_LM_DON_B_BS_40-->
+<xAxis var_list="1" var_id="114" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="16.4" x_offset_bb="22.25" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="22.25" angle="0" frame_color="-1" y_coordinate="20.15" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=115"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lytic_LM_Total_DON_BS_40-->
+<xAxis var_list="1" var_id="115" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="16.4" x_offset_bb="26.5" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="26.5" angle="0" frame_color="-1" y_coordinate="20.15" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=116"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lytic_LM_DOP_B_BS_40-->
+<xAxis var_list="1" var_id="116" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="11.25" x_offset_bb="1" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="1" angle="0" frame_color="-1" y_coordinate="15" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=117"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lytic_LM_Total_DOP_BS_40-->
+<xAxis var_list="1" var_id="117" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="11.25" x_offset_bb="5.25" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="5.25" angle="0" frame_color="-1" y_coordinate="15" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=118"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_c_VP-->
+<xAxis var_list="1" var_id="118" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="11.25" x_offset_bb="9.5" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="9.5" angle="0" frame_color="-1" y_coordinate="15" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=119"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_c_abs_VP-->
+<xAxis var_list="1" var_id="119" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="11.25" x_offset_bb="13.75" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="13.75" angle="0" frame_color="-1" y_coordinate="15" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=120"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_c_VP_SE-->
+<xAxis var_list="1" var_id="120" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="11.25" x_offset_bb="18" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="18" angle="0" frame_color="-1" y_coordinate="15" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=121"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_P_Cells_BS_10-->
+<xAxis var_list="1" var_id="121" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="11.25" x_offset_bb="22.25" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="22.25" angle="0" frame_color="-1" y_coordinate="15" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=122"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_Rate_BS_10-->
+<xAxis var_list="1" var_id="122" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="11.25" x_offset_bb="26.5" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="26.5" angle="0" frame_color="-1" y_coordinate="15" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=123"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_P_BP_Lysed_BS_10-->
+<xAxis var_list="1" var_id="123" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="6.1" x_offset_bb="1" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="1" angle="0" frame_color="-1" y_coordinate="9.85" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=124"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_P_B_Loss_BS_10-->
+<xAxis var_list="1" var_id="124" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="6.1" x_offset_bb="5.25" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="5.25" angle="0" frame_color="-1" y_coordinate="9.85" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=125"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_P_Cells_BS_25-->
+<xAxis var_list="1" var_id="125" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="6.1" x_offset_bb="9.5" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="9.5" angle="0" frame_color="-1" y_coordinate="9.85" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=126"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_Rate_BS_25-->
+<xAxis var_list="1" var_id="126" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="6.1" x_offset_bb="13.75" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="13.75" angle="0" frame_color="-1" y_coordinate="9.85" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=127"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_P_BP_Lysed_BS_25-->
+<xAxis var_list="1" var_id="127" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="6.1" x_offset_bb="18" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="18" angle="0" frame_color="-1" y_coordinate="9.85" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=128"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_P_B_Loss_BS_25-->
+<xAxis var_list="1" var_id="128" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="6.1" x_offset_bb="22.25" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="22.25" angle="0" frame_color="-1" y_coordinate="9.85" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=129"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_P_Cells_BS_40-->
+<xAxis var_list="1" var_id="129" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="6.1" x_offset_bb="26.5" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="26.5" angle="0" frame_color="-1" y_coordinate="9.85" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=130"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_Rate_BS_40-->
+<xAxis var_list="1" var_id="130" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="0.95" x_offset_bb="5.25" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="5.25" angle="0" frame_color="-1" y_coordinate="4.7" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=131"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_P_BP_Lysed_BS_40-->
+<xAxis var_list="1" var_id="131" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="0.95" x_offset_bb="9.5" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="9.5" angle="0" frame_color="-1" y_coordinate="4.7" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=132"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_P_B_Loss_BS_40-->
+<xAxis var_list="1" var_id="132" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="0.95" x_offset_bb="13.75" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="13.75" angle="0" frame_color="-1" y_coordinate="4.7" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=133"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_V_TT-->
+<xAxis var_list="1" var_id="133" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="0.95" x_offset_bb="18" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="18" angle="0" frame_color="-1" y_coordinate="4.7" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=134"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_DOC_V-->
+<xAxis var_list="1" var_id="134" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="0.95" x_offset_bb="22.25" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="22.25" angle="0" frame_color="-1" y_coordinate="4.7" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=135"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<DataWindow>
+<AxisVariables>
+<!--Lysogenic_LM_DON_V-->
+<xAxis var_list="1" var_id="135" is_reversed="F"/>
+<!--Location-->
+<yAxis var_list="1" var_id="0" is_reversed="T"/>
+</AxisVariables>
+<Modes plot_mode="9" window_mode="1" window_type="0"/>
+<Symbol small_size="1" color="0" size="0.8" type="0"/>
+<DataMark color="17" size="0.2"/>
+<Window>
+<Geometry y_top="0" x_right="10" x_length_bb="3" y_length_bb="3.75" y_bottom="5000" y_offset_bb="0.95" x_offset_bb="26.5" x_left="0"/>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="F" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="26.5" angle="0" frame_color="-1" y_coordinate="4.7" background_color="-1" frame_width="0" frame_type="0" font_size="7" text_color="0" text="var=136"/>
+</GObject>
+</GraphicsObjects>
+</Window>
+</DataWindow>
+<Canvas>
+<GraphicsObjects>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="T" is_automatic="F">
+<Annotation text_alignment="6" x_coordinate="0.25" angle="0" frame_color="-1" y_coordinate="0.02" background_color="-1" frame_width="-1" frame_type="0" font_size="7" text_color="8" text="=collection()   -   =viewName()"/>
+</GObject>
+<GObject post_data="T" clipping="F" own_coordinates="F" type="1" dragging="T" is_automatic="F">
+<Annotation text_alignment="4" x_coordinate="29.5" angle="0" frame_color="-1" y_coordinate="0.02" background_color="-1" frame_width="-1" frame_type="0" font_size="7" text_color="8" text="=date()T=time()"/>
+</GObject>
+</GraphicsObjects>
+</Canvas>
+</View>

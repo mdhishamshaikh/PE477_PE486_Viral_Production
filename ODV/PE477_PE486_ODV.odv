@@ -1,0 +1,53 @@
+
+[General]
+CollectionFormat = ODVCF6
+DataField = GeneralField
+DataType = GeneralType
+Description = pe477_pe486_vp
+NumberOfMetaVariables = 14
+NumberOfVariables = 24
+PrimaryVariableIndex = 1
+SampleQualityFlagSchema = ODV
+StationQualityFlagSchema = ODV
+
+[Meta Variables]
+0001 = Cruise;;INDEXED_TEXT;4;0;0;ODV;METACRUISE;
+0002 = Station;;TEXT;21;0;0;ODV;METASTATION;
+0003 = Type;;TEXT;2;0;0;ODV;METATYPE;
+0004 = Longitude;degrees_east;FLOAT;4;3;0;ODV;METALONGITUDE;
+0005 = Latitude;degrees_north;FLOAT;4;3;0;ODV;METALATITUDE;
+0006 = Year;;SHORT;2;0;0;ODV;METAYEAR;
+0007 = Month;;BYTE;1;0;0;ODV;METAMONTH;
+0008 = Day;;BYTE;1;0;0;ODV;METADAY;
+0009 = Hour;;BYTE;1;0;0;ODV;METAHOUR;
+0010 = Minute;;BYTE;1;0;0;ODV;METAMINUTE;
+0011 = Second;;FLOAT;4;0;0;ODV;METASECOND;
+0012 = Accession Number;;UNSIGNED_INTEGER;4;0;0;ODV;METAACCESSIONNUMBER;
+0013 = PrimaryVarMin;;FLOAT;4;2;0;ODV;METAPRIMVARMIN;
+0014 = PrimaryVarMax;;FLOAT;4;2;0;ODV;METAPRIMVARMAX;
+
+[Variables]
+0001 = VP_Lytic;;FLOAT;4;2;0;ODV;BASIC;
+0002 = VP_Lysogenic;;FLOAT;4;2;0;ODV;BASIC;
+0003 = abs_VP_Lytic;;FLOAT;4;2;0;ODV;BASIC;
+0004 = abs_VP_Lysogenic;;FLOAT;4;2;0;ODV;BASIC;
+0005 = Total_Bacteria;;FLOAT;4;2;0;ODV;BASIC;
+0006 = HNA;;FLOAT;4;2;0;ODV;BASIC;
+0007 = LNA;;FLOAT;4;2;0;ODV;BASIC;
+0008 = Total_Viruses;;FLOAT;4;2;0;ODV;BASIC;
+0009 = V1;;FLOAT;4;2;0;ODV;BASIC;
+0010 = V2;;FLOAT;4;2;0;ODV;BASIC;
+0011 = V3;;FLOAT;4;2;0;ODV;BASIC;
+0012 = VBR;;FLOAT;4;2;0;ODV;BASIC;
+0013 = TON;;FLOAT;4;2;0;ODV;BASIC;
+0014 = Nitrite;;FLOAT;4;2;0;ODV;BASIC;
+0015 = Phosphate;;FLOAT;4;2;0;ODV;BASIC;
+0016 = Silicate;;FLOAT;4;2;0;ODV;BASIC;
+0017 = Nitrate;;FLOAT;4;2;0;ODV;BASIC;
+0018 = Temperature;;FLOAT;4;2;0;ODV;BASIC;
+0019 = Salinity;;FLOAT;4;2;0;ODV;BASIC;
+0020 = LM_Lytic;;FLOAT;4;2;0;ODV;BASIC;
+0021 = LM_Lysogenic;;FLOAT;4;2;0;ODV;BASIC;
+0022 = Station;;FLOAT;4;2;0;ODV;BASIC;
+0023 = Cruise;;FLOAT;4;2;0;ODV;BASIC;
+0024 = Depth;;FLOAT;4;2;0;ODV;BASIC;

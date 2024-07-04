@@ -1,0 +1,49 @@
+
+[Key Variables]
+CFC-10 [pmol/kg] = -1
+CFC-10 [pmol/l] = -1
+CFC-11 [pmol/kg] = -1
+CFC-11 [pmol/l] = -1
+CFC-113 [pmol/kg] = -1
+CFC-113 [pmol/l] = -1
+CFC-12 [pmol/kg] = -1
+CFC-12 [pmol/l] = -1
+CH4 [nmol/kg] = -1
+CH4 [nmol/l] = -1
+CO~_2 Fugacity fCO2 [~$m~#Atm] = -1
+CO~_2 Partial Pressure pCO2 [~$m~#Atm] = -1
+Conductivity [mS/cm] = -1
+Depth in Water Column [m] = -1
+Nitrate [~$m~#mol/kg] = -1
+Nitrate [~$m~#mol/l] = 170
+Oxygen [ml/l] = -1
+Oxygen [~$m~#mol/kg] = -1
+Oxygen [~$m~#mol/l] = -1
+Phosphate [~$m~#mol/kg] = -1
+Phosphate [~$m~#mol/l] = 168
+Pot. Temperature [degC] (any ref.) = -1
+Practical Salinity [psu] = 172
+Pressure in Water Column [db] = -1
+SF6 [fmol/kg] = -1
+SF6 [fmol/l] = -1
+Seawater pH = -1
+Seawater pH [Free Scale] = -1
+Seawater pH [SWS Scale] = -1
+Seawater pH [Total Scale] = -1
+Silicate [~$m~#mol/kg] = -1
+Silicate [~$m~#mol/l] = 169
+Temperature [degC] = 171
+Total Alkalinity [~$m~#mol/kg] = -1
+Total Alkalinity [~$m~#mol/l] = -1
+Total Dissolved Inorganic Carbon [~$m~#mol/kg] = -1
+Total Dissolved Inorganic Carbon [~$m~#mol/l] = -1
+Variable with fCO2, pCO2 or pH input pressure values = -1
+Variable with fCO2, pCO2 or pH input temperature values = -1
+
+[Recent]
+MapProperties_Page = 4
+ODV_ImportDir = C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/ODV/
+Spreadsheet_ImportDir = C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production/ODV
+StationFilter_Page = 0
+View = FullScreenMap.xview
+WinProperties_Page = 1

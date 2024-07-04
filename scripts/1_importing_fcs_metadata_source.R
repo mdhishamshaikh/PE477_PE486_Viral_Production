@@ -681,7 +681,7 @@ calc_TE<- function(df = counts_metadata){
   return(counts_metadata2)
 }
 
-adjust_TE<- function(counts_metadata_df = counts_metadata, write_csv = T){
+adjust_TE<- function(counts_metadata_df = counts_metadata, write_csv = T, output_dir){
   
   counts_metadata2<- counts_metadata_df
   for (cols in c( "c_Bacteria", "c_HNA", "c_LNA", "c_Viruses", "c_V1", "c_V2", "c_V3")){
