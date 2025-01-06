@@ -1,7 +1,7 @@
 .Rproj.user
 .Rproj
 .Rhistory
-.RData
+.RData*
 .Ruserdata
 
 
@@ -11,12 +11,24 @@ PE_Cruises/results/*plot*
 
 Data/*
 figures/*
+results/*
+Linear_Regression_Method_Supervised/*
+Metadata/*
+ODV/*
+VP_discussions/*
+
+*.png
+*.svg
+*.nc
+*.pdf
+*.xlsx
+*.docx
 
 *geotif
 *.gri
 *.grd
 
-*.pptx"ODV/" 
-"PE_Cruises/" 
-"PE_Cruises2/" 
-"PE_Cruises_VP.pptx" 
+*.pptx
+PE_Cruises/*
+PE_Cruises2/*
+PE_Cruises_viral_production_OUTLIERS/*

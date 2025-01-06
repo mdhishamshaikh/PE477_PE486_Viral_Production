@@ -1,3 +1,6 @@
+library(tidyverse)
+library(ggsci)
+
 
 setwd("C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production")
 #Import FCM count csv
@@ -41,3 +44,23 @@ viral_decay_percent <- viral_decay_abundance %>%
 
 
 write.csv(viral_decay_percent, "./results/viral_decay.csv", row.names = F, quote = F)
+
+
+viral_decay <- viral_decay %>%
+  mutate(combi_tag = paste(Location, Station_Number, sep = "_"))
+
+# Pivot longer for plotting
+viral_decay_long <- viral_decay %>%
+  pivot_longer(cols = c(decay_rate, percent_decay_day), 
+               names_to = "Metric", 
+               values_to = "Value") %>%
+  mutate(Population = factor(Population, levels = c("c_Viruses", "c_V1", "c_V2", "c_V3")))
+
+# Plot
+ggplot(viral_decay_long, aes(x = combi_tag, y = Value, fill = Population)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  facet_wrap(~ Metric, scales = "free_y", ncol =1) +
+  labs(x = "Combi Tag", y = "Value", title = "Decay Rate and Percent Decay by Population") +
+  theme_minimal() +
+  scale_fill_npg() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))

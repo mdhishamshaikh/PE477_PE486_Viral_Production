@@ -1,6 +1,8 @@
 library(tidyverse)
 library(devtools)
 library(readxl)
+library(ggsci)
+library(pracma)
 
 #Install viral production calculator from Github
 #install_github("mdhishamshaikh/ViralProduction_R")
@@ -26,8 +28,264 @@ selected_files<- read_excel("Metadata/PE_Cruises_VP_Metadata.xlsx", sheet = 'Sel
 counts_per_mL<- inner_join(counts_per_mL, selected_files, by = "Sample_Name")
 #write.csv(counts_per_mL, file = 'Linear_Regression_Method_Supervised/PE477_PE486_filtered.csv', row.names = F)
 
+#Plotting VSC against time per assay to check for any outliers ####
 
- #Import abundance data
+filtered_data <- counts_per_mL %>%
+  filter(Sample_Type %in% c("VP", "VPC"))  %>%
+  mutate(Location_Station = paste(Location, Station_Number, sep = "_"))
+
+# Plotting
+vdc_plot <- ggplot(filtered_data, aes(x = Timepoint, y = c_Viruses/1e+6)) +
+  geom_line(aes(group = as.factor(Replicate))) +  # Add lines to connect points for each sample
+  geom_point(aes(color = as.factor(Replicate)), size = 2) +  # Color points by Sample_Type
+  facet_grid(Sample_Type ~ Location_Station) +  # Facet by Location_Station and Sample_Type
+  scale_color_npg() +
+  theme_bw(base_size = 15) +
+  labs(#title = "Viral Abundance (c_Viruses) over Timepoints",
+       x = "Timepoint",
+       y = "Viral Count (c_Viruses)",
+       color = "Sample Type")
+vdc_plot
+ggsave(vdc_plot, filename = "./figures/vdc_plot.svg", width = 20, height = 5)
+
+# Fucntion to make an exclusion dataframe
+add_to_exclusion <- function(existing_df = NULL, location, station, sample_type, timepoint, replicate) {
+  
+  # Check if the exclusion data frame exists, if not, create it with the proper column names
+  if (is.null(existing_df)) {
+    existing_df <- data.frame(
+      Location = character(),
+      station_Number = numeric(),
+      Sample_Type = character(),
+      Timepoint = numeric(),
+      Replicate = numeric(),
+      stringsAsFactors = FALSE
+    )
+  }
+  
+  # Append the new exclusion row
+  new_row <- data.frame(
+    Location = location,
+    Station_Number = station,
+    Sample_Type = sample_type,
+    Timepoint = timepoint,
+    Replicate = replicate,
+    stringsAsFactors = FALSE
+  )
+  
+  # Combine the existing data frame with the new row
+  existing_df <- rbind(existing_df, new_row)
+  
+  return(existing_df)
+}
+
+
+# Initialize the exclusion data frame
+# to_exclude <- NULL
+# to_exclude <- add_to_exclusion(to_exclude, "PE477", 4, "VPC", 6, 3) # Location, Station_Number, Sampe_Type, Timepoint, Replicate# recursively add on to the dataframe
+
+# write.csv(to_exclude, file = "./results/viral_production_analyses/excluded_samples.csv", row.names =F)
+
+# # To remove in case
+# to_exclude <- to_exclude %>%
+#   filter(!(Location == "PE477" & 
+#              Station_Number == 5 & 
+#              Sample_Type == "VPC" & 
+#              Timepoint == 24 & 
+#              Replicate == 3))
+
+
+exclusion_df <- read.csv("./results/viral_production_analyses/excluded_samples.csv")
+
+for (i in 1:nrow(exclusion_df)) {
+  counts_per_mL <- counts_per_mL %>%
+    mutate(c_Viruses = ifelse(Location == exclusion_df$Location[i] &
+                                Station_Number == exclusion_df$Station_Number[i] &
+                                Timepoint == exclusion_df$Timepoint[i] &
+                                Replicate == exclusion_df$Replicate[i] &
+                                Sample_Type == exclusion_df$Sample_Type[i], 
+                              NA, c_Viruses))
+}
+
+
+filtered_data <- counts_per_mL %>%
+  dplyr::filter(Sample_Type %in% c("VP", "VPC"))  %>%
+  mutate(Location_Station = paste(Location, Station_Number, sep = "_"))
+
+# Plotting
+vdc_filtered_plot <- ggplot(filtered_data, aes(x = Timepoint, y = c_Viruses/1e+6)) +
+  geom_line(aes(group = as.factor(Replicate))) +  # Add lines to connect points for each sample
+  geom_point(aes(color = as.factor(Replicate)), size = 2) +  # Color points by Sample_Type
+  facet_grid(Sample_Type ~ Location_Station) +  # Facet by Location_Station and Sample_Type
+  scale_color_npg() +
+  theme_bw(base_size = 15) +
+  labs(#title = "Viral Abundance (c_Viruses) over Timepoints",
+    x = "Timepoint",
+    y = "Viral Count (c_Viruses)",
+    color = "Sample Type")
+vdc_filtered_plot
+ggsave(vdc_filtered_plot, filename = "./figures/vdc_filtered_plot.svg", width = 20, height = 5)
+
+vdc_filtered_lm_plot <- ggplot(filtered_data, aes(x = Timepoint, y = c_Viruses / 1e+6)) +
+  #geom_line(aes(group = as.factor(Replicate))) +  # Add lines to connect points for each sample
+  geom_point(aes(color = as.factor(Replicate)), size = 2) +  # Color points by Replicate
+  geom_smooth(aes(group = as.factor(Replicate), color = as.factor(Replicate)), 
+              method = "lm", se = FALSE, linetype = "dashed") +  # Add regression lines per replicate
+  facet_grid(Sample_Type ~ Location_Station) +  # Facet by Location_Station and Sample_Type
+  scale_color_npg() +
+  theme_bw(base_size = 15) +
+  labs(#title = "Viral Abundance (c_Viruses) over Timepoints",
+    x = "Timepoint",
+    y = "Viral Count (c_Viruses)",
+    color = "Sample Type")
+vdc_filtered_lm_plot
+ggsave(vdc_filtered_lm_plot, filename = "./figures/vdc_filtered_lm_plot.svg", width = 20, height = 5)
+
+##########################
+library(dplyr)
+library(ggplot2)
+
+# Step 1: Group by Location, Station_Number, and Timepoint, then average replicates for each treatment
+averaged_data <- filtered_data %>%
+  group_by(Location, Station_Number, Timepoint, Sample_Type) %>%
+  summarise(mean_c_Viruses = mean(c_Viruses, na.rm = TRUE),
+            sem_c_Viruses = sd(c_Viruses, na.rm = TRUE) / sqrt(n())) %>%
+  ungroup()
+
+# Step 2: Separate VP and VPC treatments and calculate the difference
+wide_data <- averaged_data %>%
+  pivot_wider(names_from = Sample_Type, 
+              values_from = c(mean_c_Viruses, sem_c_Viruses), 
+              names_sep = "_")
+
+# Step 3: Calculate the difference between VPC and VP treatments and their standard error
+wide_data <- wide_data %>%
+  mutate(
+    difference_c_Viruses = difference_c_VirusesC - difference_c_Viruses,  # Difference between VPC and VP
+    difference_sem = sqrt((difference_semC)^2 + (difference_sem)^2)  # Simplified error calculation
+  )
+
+# Step 4: Plot the difference curve with standard error
+ggplot(wide_data, aes(x = Timepoint, y = difference_c_Viruses / 1e+6)) +
+  geom_line() +
+  geom_point(size = 2) +
+  geom_errorbar(aes(ymin = (difference_c_Viruses - difference_sem) / 1e+6,
+                    ymax = (difference_c_Viruses + difference_sem) / 1e+6), 
+                width = 0.2) +
+  facet_wrap(~ paste(Location, Station_Number, sep = "_"), scales = "free") +
+  theme_bw(base_size = 15) +
+  labs(title = "Difference Curve: VPC - VP",
+       x = "Timepoint",
+       y = "Difference in Viral Count (c_Viruses in millions)")
+###########
+
+# 
+# 
+# wide_data
+# 
+# wide_data_PE477_3 <- wide_data %>%
+#   dplyr::filter(Location == "PE477",
+#                 Station_Number == 3) %>%
+#   arrange(Timepoint)  # Ensure timepoints are in order
+# 
+# wide_data_PE477_1 <- wide_data %>%
+#   dplyr::filter(Location == "PE477",
+#                 Station_Number == 1) %>%
+#   arrange(Timepoint)  # Ensure timepoints are in order
+# 
+# 
+# DF2 <-wide_data_PE477_3
+# DF2 <-wide_data_PE477_1
+# # Sample DataFrame to test the function
+# index_peaks <- vp_determine_peaks(c(+10e+10, DF2$difference_c_Viruses , -10e+10))
+# index_valleys <- vp_determine_valleys(c(+10e+10, DF2$difference_c_Viruses , -10e+10))
+# index_peaks
+# index_valleys
+# # Peak at 5 and valley at 3
+# 
+# index_peaks <- vp_determine_peaks_with_se(c(+10e+10, DF2$difference_c_Viruses, -10e+10),
+#                                           c(0, DF2$difference_sem , 0))
+# index_valleys <- vp_determine_valleys_with_se(c(+10e+10, DF2$difference_c_Viruses, -10e+10),
+#                                               c(0, DF2$difference_sem , 0))
+# 
+# index_peaks
+# index_valleys
+# 
+# 
+# 
+# 
+# 
+# if (length(index_peaks) == 0){
+#   viral_production <- 0
+#   abs_vp <- 0
+#   se <- 0
+# }else {
+#   total_vp <- 0
+#   total_abs_vp <- 0
+#   total_se <- 0
+#   
+#   for (index in 1:length(index_peaks)){
+#     viral_production_index <- (DF2$difference_c_Viruses[index_peaks[index]] - DF2$difference_c_Viruses[index_valleys[index]]) / (DF2$Timepoint[index_peaks[index]] - DF2$Timepoint[index_valleys[index]])
+#     total_vp <- total_vp + viral_production_index
+#     
+#     abs_vp_index <- DF2$difference_c_Viruses[index_peaks[index]] - DF2$difference_c_Viruses[index_valleys[index]]
+#     total_abs_vp <- total_abs_vp + abs_vp_index
+#     
+#     se_index <- (DF2$difference_sem[index_peaks[index]] + DF2$difference_sem[index_valleys[index]]) / (DF2$Timepoint[index_peaks[index]] - DF2$Timepoint[index_valleys[index]])
+#     total_se <- total_se + se_index
+#   }
+#   viral_production <- total_vp / length(index_peaks)
+#   abs_vp <- total_abs_vp
+#   se <- total_se / length(index_peaks)
+# }
+# 
+# 
+# result <- c(combi_tag, time, virus, sample, viral_production, abs_vp, se)
+# result_list[[length(result_list) + 1]] <- result
+# }
+# 
+# 
+# 
+# # Display the sample dataframe
+# print(AVG_dataframe)
+# 
+# # Check for absence of peaks and valleys
+# if (length(index_peaks) == 0 || length(index_valleys) == 0) {
+#   viral_production <- 0
+#   abs_vp <- 0
+#   se <- 0
+# } else {
+#   total_vp <- 0
+#   total_abs_vp <- 0
+#   total_se <- 0
+#   
+#   # Calculate viral production, absolute VP, and standard error (SE) based on peak-valley pairs
+#   for (index in 1:min(length(index_peaks), length(index_valleys))) {
+#     # Calculate production index using `difference_c_Viruses`
+#     viral_production_index <- (DF2$difference_c_Viruses[index_peaks[index]] - DF2$difference_c_Viruses[index_valleys[index]]) / 
+#       (DF2$Timepoint[index_peaks[index]] - DF2$Timepoint[index_valleys[index]])
+#     total_vp <- total_vp + viral_production_index
+#     
+#     # Calculate absolute VP difference
+#     abs_vp_index <- DF2$difference_c_Viruses[index_peaks[index]] - DF2$difference_c_Viruses[index_valleys[index]]
+#     total_abs_vp <- total_abs_vp + abs_vp_index
+#     
+#     # Calculate SE using `difference_sem`
+#     se_index <- (DF2$difference_sem[index_peaks[index]] + DF2$difference_sem[index_valleys[index]]) / 
+#       (DF2$Timepoint[index_peaks[index]] - DF2$Timepoint[index_valleys[index]])
+#     total_se <- total_se + se_index
+#   }
+#   
+#   # Average the total viral production and SE over the number of peak-valley pairs
+#   viral_production <- total_vp / length(index_peaks)
+#   abs_vp <- total_abs_vp
+#   se <- total_se / length(index_peaks)
+# }
+
+##########
+
+
+#Import abundance data
 url<- "https://raw.githubusercontent.com/mdhishamshaikh/NorthSea_Microbial_Abundance_Nutrients/main/nj2020_pe477_pe486_bv_abundance_abiotic.csv"
 abundance<- readr::read_csv(url)
 str(abundance)
@@ -52,9 +310,9 @@ class(counts_per_mL)
  
 vp_end_to_end(data = counts_per_mL ,
               original_abundances = abundance,
-              methods = c(2,10),
+              methods = c(2,9,10),
               write_output = T,
-              output_dir = 'PE_Cruises2/results/PE_Cruises_viral_production')
+              output_dir = 'PE_Cruises_viral_production_OUTLIERS')
 
 # 
 # #### Visualize ####

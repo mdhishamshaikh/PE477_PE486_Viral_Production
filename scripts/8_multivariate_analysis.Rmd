@@ -1,0 +1,732 @@
+---
+title: "8_multivariate_analysis"
+output:
+  html_document: default
+  pdf_document: default
+date: "2024-12-23"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production")
+```
+
+## Importing libraries and setting working directory
+
+```{r libraries, echo=FALSE}
+library(tidyverse)
+library(ggsci)
+library(vegan)
+library(ggfortify)
+library(psych)
+library(corrplot)
+library(colorspace)
+library(patchwork)
+library(cowplot)
+
+```
+
+## Importing depth profiles\
+\
+Depths profiles were collected onboar R/V Pelagia with sensors mounted on rosette sampler. Parameters collected include -\
+1. Salinity\
+2. Temperature\
+3. Pressure (used to measure Depth)\
+4. Density (derived using Gibbs SeaWater equation)\
+5. Conductivity\
+6. Oxygen\
+7. Turbidity\
+8. Fluorescence\
+
+
+```{r importing ctd profiles, echo=FALSE}
+
+ctd_profiles <- utils::read.csv("./results/ctd_profiles/ctd_profiles.csv")
+
+```
+
+
+I will perform factor analysis to identify latent variables , apply dimension reduction appraoches like PCA and identify clusters to dissect spatio temporal patterns.\
+\
+## Both cruises combined\
+Before factor analysis, I want to make sure its suitability. I will use Kaiser-Meyer-Olkin (KMO) index and Barlett's test from `psych` R package.\
+
+```{r KMO and Barletts tests}
+kmo_result <- KMO(ctd_profiles %>% select(-Location_Station_Number, -Location, -Station_Number, -Depth, -Pressure))
+bartlett_result <- cortest.bartlett(ctd_profiles %>% select(-Location_Station_Number, -Location, -Station_Number, -Depth, - Pressure))
+
+print(kmo_result)
+print(bartlett_result)
+
+```
+### *Kaiser-Meyer-Olkin (KMO) Factor Adequacy*\
+The Measure of Sampling Adequacy (MSA) of 0.68 in the KMO test is mediocre, but acceptable for factor analysis. \
+Salinity has a low MSA of 0.35, shows weak variance with other variables. Consider removing. \
+Moderate MSA were observed for temperature, conductivity, and turbidity, whereas high MSA (> 0.7) observed for density, oxygen, and fluorescence, will provide adequate to considerably towards the factor model. \
+\
+
+### *Barlett's test of sphericity*
+A large chi sqaure value of 198,668 indicates strong correlations among variables. \
+Highly significant (p = 0) indicating corraltion matrix is not an identiy matric and factor analysis is appropriate. \
+
+I will exclude Salinity and perform these tests again.\
+```{r KMO and Barletts tests without salinity, include=FALSE}
+kmo_result_no_salinity <- KMO(ctd_profiles %>% select(-Location_Station_Number, -Location, -Station_Number, -Depth, -Pressure, -Salinity))
+bartlett_result_no_salinity <- cortest.bartlett(ctd_profiles %>% select(-Location_Station_Number, -Location, -Station_Number, -Depth, - Pressure, -Salinity))
+
+print(kmo_result_no_salinity)
+print(bartlett_result_no_salinity)
+
+```
+Removing salinity improves the dataset for factor analysis.\
+
+*Factor Analysis*
+
+```{r factor analysis, echo=TRUE}
+fa_result <- fa(ctd_profiles %>% select(-Location_Station_Number, -Location, -Station_Number, -Depth, -Pressure, -Salinity), 
+                nfactors = 2, rotate = "varimax", fm = "ml")
+print(fa_result)
+```
+I extracted 2 factors (ML1 and ML2) that together explain 79 % of the variance. \
+The Root Mean Square Residual (RMSR) is 0.01 which indicates good fit for the model. The factors explain correlations between variables well. \
+The Root Mean Square Error of Estimation (RMSEA) is  0.692 which is high. RMSEA values below < 0.1 are considerable, but given the simplicity of the data it is still useful. \
+
+Explanation of the loadings:\
+1. Temperature: Strong negative loading on ML1 and moderate on ML2; high communality (well-explained by both factors); high complexity (contributes to both factors).\
+2. Density: Strong positive loading on ML1 and moderate on ML2; high communality; ad high complexity.\
+3. Conductivity: same as temperature. \
+4. Oxygen: Moderate positive loading on ML1 and ML2; moderate communality (partially explained by the two factors); and high complexity (contributes significantly to both factors).\
+5. Turbidity: Moderate loading on ML1 and high on ML2; high communality; and low complexity (primarily explained by ML2).\
+6. Fluorescence: Low loadings on both ML1 and ML2; low communality. It also has high uniqueness- much of its variance is independent of these two factors.  High complexity and weakly contributes to both factors.\
+\
+Temperature, density, conductivity, turbidity have high lowdings and communality inf=dicating that these variables are strngly rerpresented by the two factors. \
+Oxygen moderately cntributes to both, and therfore shouuld be retained.\
+Fluorescence have low communality and high uniqueness and is not well-represneted by either variables. Might not contribute significant in further analysis. \
+
+ML1 represnts phyical properties - teperature, density, conductivity.\
+ML2 represets particlate and biological properties like turidity and oxygen - indicating biological activty. \
+
+I will also exclude fluorescence from further abysis.
+
+
+##performing PCA
+i will use the original variables istead of the latent ones, just to keep the structure intact for easy interpretation. I will exclude fluorescence from further analysis.
+```{r pca, echo=T}
+pca_data <- ctd_profiles %>%
+  select(-Location_Station_Number, -Location, -Station_Number, -Depth, -Pressure, -Salinity, -Fluorescence)
+
+pca_result <- prcomp(pca_data, scale. = TRUE)
+
+summary(pca_result)
+
+
+pca_var <- data.frame(PC = 1:length(pca_result$sdev),
+                      Variance = (pca_result$sdev^2) / sum(pca_result$sdev^2) * 100)
+
+ggplot(pca_var, aes(x = PC, y = Variance)) +
+  geom_col() +
+  geom_line(aes(group = 1), color = "red") +
+  geom_point() +
+  labs(title = "Scree Plot: Variance Explained by PCs", x = "Principal Components", y = "Percentage Variance Explained") +
+  theme_minimal()
+unique_stations <- unique(ctd_profiles$Location_Station_Number)  # Get unique station names
+custom_palette <- pal_d3("category20")(length(unique_stations))  # Generate unique colors
+color_mapping <- setNames(custom_palette, unique_stations)  # Map each station to a color
+
+autoplot(pca_result, data = ctd_profiles,  color = "Location_Station_Number") +
+  theme_minimal() +
+  scale_color_manual(values = color_mapping) +
+  labs(title = "PCA of CTD Profiles", x = "PC1", y = "PC2")
+```
+
+PC1 explains 88.11 % of the variance- captures almost all meaningful pattersn. PC2 adds aother 8.23, bringing the total to 96.33 % \
+The datset is effectively two dimensional.\
+
+``` {r pca loadings}
+# Scale loadings to a maximum absolute value of 0.1
+pca_loadings <- as.data.frame(pca_result$rotation[, 1:2])  # Loadings for PC1 and PC2
+pca_loadings$Variable <- rownames(pca_result$rotation)  # Add variable names
+
+# Scale loadings
+max_loading <- max(abs(pca_loadings[, 1:2]))  # Maximum absolute loading value
+desired_max <- 4  # Desired maximum magnitude
+pca_loadings_scaled <- pca_loadings
+pca_loadings_scaled[, 1:2] <- pca_loadings_scaled[, 1:2] / max_loading * desired_max
+
+# PCA Scores for plotting
+pca_scores <- as.data.frame(pca_result$x[, 1:2])  # PCA scores (PC1 and PC2)
+pca_scores$Location_Station_Number <- ctd_profiles$Location_Station_Number
+try(pca_scores <- pca_scores %>%
+  tidyr::separate(Location_Station_Number, into = c("Location", "Station_Number"), sep = "_", remove = F))
+
+
+ggplot() +
+  # Plot PCA scores
+  geom_point(data = pca_scores, aes(x = PC1, y = PC2, color = Location_Station_Number), alpha = 0.7, size = 3) +
+  # Add ellipses grouped by Location
+  stat_ellipse(data = pca_scores, aes(x = PC1, y = PC2, group = Location, color = Location), 
+               linetype = "dashed", size = 1) +
+  # Add loadings as arrows
+  geom_segment(data = pca_loadings_scaled, aes(x = 0, y = 0, xend = PC1, yend = PC2), 
+               arrow = arrow(length = unit(0.2, "cm")), color = "blue", size = 1) +
+  # Add variable names to loadings
+  geom_text(data = pca_loadings_scaled, aes(x = PC1, y = PC2, label = Variable), 
+            color = "blue", vjust = 1, hjust = 1, size = 4) +
+  # Labels and theme
+  labs(title = "PCA Biplot with Scaled Loadings and Location Ellipses", 
+       x = "PC1", y = "PC2") +
+  # Apply custom color palette
+  scale_color_manual(values = color_mapping) +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+
+
+```
+
+##Performing clustering
+
+```{r clustering, echo=TRUE}
+pca_scores <- as.data.frame(pca_result$x[, 1:2])
+
+# Perform k-means clustering (choose k based on elbow method or silhouette score)
+set.seed(123)
+kmeans_result <- kmeans(pca_scores, centers = 3)  # Adjust centers as needed
+pca_scores$Cluster <- as.factor(kmeans_result$cluster)
+
+# Add cluster assignments back to original data
+ctd_profiles$Cluster <- pca_scores$Cluster
+
+ggplot(pca_scores, aes(x = PC1, y = PC2, color = Cluster)) +
+  geom_point(size = 2, alpha = 0.5) +
+  labs(title = "Clusters Based on PCA", x = "PC1", y = "PC2") +
+  theme_minimal()
+
+
+```
+```{r echo=TRUE}
+# Combine PCA plot with color for Location_Station_Number and shape for Cluster
+# Generate custom color palette
+custom_palette <- pal_d3("category20")(16)  # Generate 16 distinct colors from the D3 palette
+# Define a fixed custom palette for Location_Station_Number
+custom_palette <- c(
+  "PE477_1" = "#1f77b4", "PE477_2" = "#ff7f0e", "PE477_3" = "#2ca02c",
+  "PE477_4" = "#d62728", "PE477_5" = "#9467bd", "PE477_6" = "#8c564b",
+  "PE486_1" = "#e377c2", "PE486_2" = "#7f7f7f", "PE486_3" = "#bcbd22",
+  "PE486_4" = "#17becf", "PE486_5" = "#aec7e8", "PE486_6" = "#ffbb78",
+  "PE477_7" = "#98df8a", "PE486_7" = "#ff9896",
+  "PE477" = lighten("#0c1844", 0.4), "PE486" = lighten("#850000", 0.4)
+)
+
+# Add Cluster column to the PCA scores dataframe
+pca_scores <- as.data.frame(pca_result$x[, 1:2])
+pca_scores$Cluster <- ctd_profiles$Cluster
+pca_scores$Location_Station_Number <- ctd_profiles$Location_Station_Number
+
+# PCA plot with ellipses per Cluster and stroke for points
+ggplot(pca_scores, aes(x = PC1, y = PC2)) +
+  geom_point(aes(fill = Location_Station_Number, shape = Cluster), color = 'black', alpha = 0.5, size = 3, stroke = 0.3) +  # Add stroke
+  stat_ellipse(aes(group = Cluster, linetype = Cluster), level = 0.95, size = 1) +  # Ellipses per Cluster
+  scale_color_manual(values = custom_palette) +  # Custom color palette
+  labs(title = "PCA: Location_Station_Number and Ellipses per Cluster with Stroke",
+       x = "PC1", y = "PC2", color = "Location/Station", shape = "Cluster") +
+  theme_minimal() +
+  scale_shape_manual(values = c(21, 22, 24)) 
+  theme(legend.position = "right")
+
+
+
+```
+#Hierarchical clustering
+
+```{r}
+# Split Location from Location_Station_Number
+distance_matrix <- dist(pca_scores, method = "euclidean")  # Adjust method if needed
+
+# Perform hierarchical clustering
+hclust_result <- hclust(distance_matrix, method = "ward.D2")  # Use Ward's method
+
+# Cut tree into clusters (choose the number of clusters, e.g., 3)
+pca_scores$Cluster <- as.factor(cutree(hclust_result, k = 3))  # Adjust 'k' for number of clusters
+
+# Add cluster assignments back to original data
+ctd_profiles$Cluster <- pca_scores$Cluster
+ctd_profiles$Location <- sub("_.*", "", ctd_profiles$Location_Station_Number)
+
+# Create a dendrogram object
+dendrogram <- as.dendrogram(hclust_result)
+
+# Convert the dendrogram to a ggplot-friendly format
+library(ggdendro)
+dendro_data <- dendro_data(dendrogram)
+
+# Add geom points to the dendrogram tips colored by Location
+ggplot() +
+  geom_segment(data = dendro_data$segments,
+               aes(x = x, y = y, xend = xend, yend = yend), size = 0.5) +
+  geom_point(data = dendro_data$labels,
+             aes(x = x, y = 0, color = ctd_profiles$Location), size = 3, alpha = 0.4) +
+  labs(title = "Dendrogram with Locations",
+       x = "", y = "Height", color = "Location") +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "right")
+
+
+```
+```{r}
+# need to check the dendrogram for cluster gaian. i think there is some issue with the #assignment of lcusters wrt to stations.
+# Create a mapping of cluster assignment from PCA scores
+dendro_data$labels$Cluster <- pca_scores$Cluster
+
+# Plot the dendrogram
+ggplot() +
+  # Add dendrogram branches
+  geom_segment(data = dendro_data$segments,
+               aes(x = x, y = y, xend = xend, yend = yend), size = 0.5) +
+  # Add colored points to the dendrogram tips based on clusters
+  geom_point(data = dendro_data$labels,
+             aes(x = x, y = 0, color = Cluster), size = 3) +
+  # Add rectangles around clusters based on Cluster information
+  geom_rect(data = dendro_data$labels,
+            aes(xmin = min(x), xmax = max(x), ymin = 0, ymax = max(y)),
+            fill = NA, color = "black", linetype = "dashed", size = 0.5) +
+  labs(title = "Dendrogram with Clusters Boxed",
+       x = "", y = "Height", color = "Cluster") +
+  theme_minimal(base_size = 12) +
+  theme(axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        legend.position = "right")
+
+```
+Cluster 2 splits itself between two seasons. Though we do see seasonal differences. Cluster 
+
+# Differences in variables b
+
+
+``` {r}
+# Load necessary libraries
+library(ggplot2)
+library(tidyr)
+
+# Reshape the data into long format for plotting
+ctd_long <- ctd_profiles %>%
+  pivot_longer(
+    cols = c(Salinity, Temperature, Density, Conductivity, Oxygen, Turbidity, Fluorescence),
+    names_to = "Variable",
+    values_to = "Value"
+  ) %>%
+  dplyr::mutate(
+    Variable = factor(Variable, levels = c("Salinity", "Temperature", "Density", 
+                                           "Conductivity", "Oxygen", "Turbidity", "Fluorescence"))
+  )
+
+# Create grouped boxplots
+ggplot(ctd_long, aes(x = as.factor(Cluster), y = Value, fill = as.factor(Cluster))) +
+  geom_boxplot(outlier.color = "red", outlier.size = 1) +
+  #geom_violin()+
+  facet_wrap(~Variable, scales = "free_y", nrow = 2) +
+  labs(
+    title = "Grouped Boxplots of Environmental Variables by Cluster",
+    x = "Cluster",
+    y = "Value",
+    fill = "Cluster"
+  ) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "none")
+
+# Create grouped boxplots
+ggplot(ctd_long %>% dplyr::filter(Cluster != 2), aes(x = as.factor(Cluster), y = Value, fill = as.factor(Cluster))) +
+  geom_boxplot(outlier.color = "red", outlier.size = 1) +
+  #geom_violin()+
+  facet_wrap(~Variable, scales = "free_y", nrow = 2) +
+  labs(
+    title = "Grouped Boxplots of Environmental Variables by Cluster without Cluster 2",
+    x = "Cluster",
+    y = "Value",
+    fill = "Cluster"
+  ) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "none")
+
+# Create grouped boxplots
+ggplot(ctd_long, aes(x = as.factor(Location), y = Value, fill = as.factor(Location))) +
+  geom_boxplot(outlier.color = "red", outlier.size = 1) +
+  scale_fill_manual(values = c("PE477" = lighten("#0c1844", 0.4), "PE486" = lighten("#850000", 0.2))) +
+  #geom_violin()+
+  facet_wrap(~Variable, scales = "free_y", nrow = 2) +
+  labs(
+    title = "Grouped Boxplots of Environmental Variables by Cruise",
+    x = "Cluster",
+    y = "Value",
+    fill = "Cluster"
+  ) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "none")
+
+```
+
+
+# Kruskal Wallis
+```{r}
+library(dplyr)
+
+# Perform Kruskal-Wallis test for each variable
+kruskal_results <- ctd_long %>%
+  group_by(Variable) %>%
+  summarise(
+    Kruskal_Statistic = list(kruskal.test(Value ~ Cluster, data = cur_data())$statistic),
+    p_value = list(kruskal.test(Value ~ Cluster, data = cur_data())$p.value)
+  ) %>%
+  unnest(cols = c(Kruskal_Statistic, p_value))
+
+# Display the results
+print(kruskal_results)
+
+
+library(FSA)
+library(dplyr)
+
+
+# Function to perform Dunn's test after Kruskal-Wallis
+perform_posthoc <- function(data) {
+  # Perform Kruskal-Wallis test
+  kruskal_result <- kruskal.test(Value ~ Cluster, data = data)
+  
+  # Perform Dunn's test (post-hoc analysis)
+  dunn_result <- dunnTest(Value ~ Cluster, data = data, method = "bonferroni")
+  
+  # Extract results
+  posthoc_results <- dunn_result$res
+  
+  return(posthoc_results)
+}
+
+# Apply the function for each variable
+posthoc_results <- ctd_long %>%
+  group_by(Variable) %>%
+  summarise(PostHoc = list(perform_posthoc(cur_data()))) %>%
+  unnest(PostHoc)
+
+
+print(posthoc_results)
+```
+All combinations are significantly different from each other. Outliers were not removed as they depict ecological variability.\
+
+\
+\
+
+Combining this with latitude and longitude to look into spatial patterns. \
+## NEED TO RETHINK THIS PART.missing pe486 stations \\
+
+```{r coordinates, eval=FALSE, include=FALSE}
+url<- "https://raw.githubusercontent.com/mdhishamshaikh/NorthSea_Microbial_Abundance_Nutrients/main/nj2020_pe477_pe486_bv_abundance_abiotic.csv"
+abundance<- readr::read_csv(url)
+str(abundance)
+
+#Extracting first entries per Location/Station_Number combinations, as some stations had multiple depths and this information is missing from the fiel on GitHub.
+#The first one is the depth for VP assays.
+abundance<- abundance %>%
+  filter(Location %in% c("PE477", "PE486") )
+ctd_profiles_coord <- merge(ctd_profiles, abundance[, c("Location", "Station_Number", "Latitude", "Longitude")], 
+                     by = c("Location", "Station_Number"), 
+                     all.x = TRUE)
+
+# View the merged data
+head(merged_data)
+# Ensure rownames from pca_data match original data
+ctd_profiles_filtered <- ctd_profiles_coord[rownames(pca_data), ]
+
+# Check dimensions to ensure alignment
+nrow(ctd_profiles_filtered)  # Should match nrow(pca_scores)
+
+# Add cluster information from pca_scores
+ctd_profiles_filtered$Cluster <- pca_scores$Cluster
+
+# Spatial visualization
+for (
+  cluster in c(1:3)) {
+print(ggplot(ctd_profiles_filtered %>% dplyr::filter(Cluster == cluster,
+                                               Depth < 8), aes(x = Longitude, y = Latitude, color = as.factor(Cluster))) +
+  geom_point(size = 3, alpha = 0.2, aes(color = Location_Station_Number)) +
+  labs(title = "Spatial Visualization of PCA Clusters",
+       x = "Longitude", y = "Latitude", color = "Cluster") +
+  theme_minimal() +
+  theme(legend.position = "right"))
+}
+
+```
+
+
+# Importing Nutrients and micorbial abundance data 3 depths into an RDA.\
+```{r micorbial abundances and nutrients}
+url<- "https://raw.githubusercontent.com/mdhishamshaikh/NorthSea_Microbial_Abundance_Nutrients/main/nj2020_pe477_pe486_bv_abundance_abiotic.csv"
+abundance<- readr::read_csv(url)
+str(abundance)
+
+#Extracting first entries per Location/Station_Number combinations, as some stations had multiple depths and this information is missing from the fiel on GitHub.
+#The first one is the depth for VP assays.
+abundance<- abundance %>%
+  dplyr::filter(Location %in% c("PE477", "PE486")) %>%
+  dplyr::select(-c(Temperature, Salinity, ends_with("Sample_Name"), Expt_Date, TON))
+
+ctd_profiles_closest_depth <- read.csv("./results/ctd_profiles/ctd_variables_sampling_depths.csv")
+ctd_profiles_closest_depth$Depth <- ctd_profiles_closest_depth$Target_Depth
+
+ctd_profiles_abundance_nutrients <- ctd_profiles_closest_depth %>%
+  left_join(abundance, by = c("Location", "Station_Number","Depth")) %>%
+  group_by(Location, Station_Number, Depth) %>%
+  slice_min(row_number(), n = 1) %>%
+  ungroup() %>%
+  dplyr::select(-c(Measured_depth, Target_Depth, Distance))  %>%
+  mutate(
+    Nitrate = if_else(Nitrate < 0, 0, Nitrate),
+    Nitrite = if_else(Nitrite < 0, 0, Nitrite),
+    Phosphate = if_else(Phosphate < 0, 0, Phosphate),
+    Silicate = if_else(Silicate < 0, 0, Silicate)
+  ) %>%
+  na.omit()
+
+write.csv(ctd_profiles_abundance_nutrients, "./results/ctd_profiles_abundance_nutrients_3_depths.csv", row.names = F)
+
+```
+
+I will rerun factor analysis, PCA, and now run RDA with micorbial abudance as a repsons evariable.
+
+```{r}
+kmo_result <- KMO(ctd_profiles_abundance_nutrients %>% dplyr::select(-c(Location_Station_Number, Location, Station_Number, Depth, Pressure, Latitude, Longitude)))
+bartlett_result <- cortest.bartlett(ctd_profiles_abundance_nutrients %>% select(-c(Location_Station_Number, Location, Station_Number, Depth, Pressure, Latitude, Longitude)))
+
+print(kmo_result)
+print(bartlett_result)
+```
+
+The error `system is computationally singular` means that the matrix cannot be inverted - multicollineairty and possibly low variance within variables. 
+
+```{r checking for FA assumptions}
+
+# Checking for low variance first.
+low_variance <- apply(ctd_profiles_abundance_nutrients %>% 
+                      select(-c(Location_Station_Number, Location, Station_Number, Depth, Pressure, Latitude, Longitude)), 
+                      2, 
+                      var) == 0.1
+print(low_variance)
+#All FALSE in low variance. 
+#No need to remove
+# ctd_profiles_abundance_nutrients <- ctd_profiles_abundance_nutrients[, !low_variance]
+
+# Checking correlation
+
+cor_matrix <- cor(ctd_profiles_abundance_nutrients %>% 
+                  select(-c(Location_Station_Number, Location, Station_Number, Depth, Pressure, Latitude, Longitude)), 
+                  use = "pairwise.complete.obs")
+
+high_corr <- which(abs(cor_matrix) > 0.9 & abs(cor_matrix) < 1, arr.ind = TRUE)
+correlated_pairs <- data.frame(
+  Var1 = rownames(cor_matrix)[high_corr[, 1]],
+  Var2 = colnames(cor_matrix)[high_corr[, 2]],
+  Correlation = cor_matrix[high_corr]
+)
+print(correlated_pairs)
+corrplot(cor_matrix, method = "color", tl.cex = 0.8, tl.col = "black")
+
+# Temperature, density, turbidity, and conductivity are highly correlated with each other. Removing conductivity, turbidity, and density.\
+# Total_Bacteria, HNA and LNA bacteria are highly correlated. Removing HNA and LNA.\
+# V1 and V2 are highly correlated with Total_Viruses. Remove V1, V2, (and V3)\
+# 
+
+# Checking again after removing these variables.
+
+kmo_result_low_corr <- KMO(ctd_profiles_abundance_nutrients %>% dplyr::select(-c(Location_Station_Number, Location, Station_Number, Depth, Pressure, Latitude, Longitude, Density, Conductivity, Turbidity, HNA, LNA, V1, V2, V3)))
+bartlett_result_low_corr <- cortest.bartlett(ctd_profiles_abundance_nutrients %>% select(-c(Location_Station_Number, Location, Station_Number, Depth, Pressure, Latitude, Longitude, Density, Conductivity, Turbidity, HNA, LNA, V1, V2, V3)))
+
+print(kmo_result_low_corr)
+print(bartlett_result_low_corr)
+```
+
+
+```{r }
+# fa_result <- fa(ctd_profiles_abundance_nutrients %>% dplyr::select(-c(Location_Station_Number, Location, Station_Number, Depth, Pressure, Latitude, Longitude, Density, Conductivity, Turbidity, HNA, LNA, V1, V2, V3, Salinity)), 
+#                 nfactors = 2, rotate = "varimax", fm = "ml")
+# print(fa_result)
+
+library(FactoMineR)
+library(factoextra)
+library(RColorBrewer)
+
+# Perform PCA on the scaled data
+
+pca_data <- ctd_profiles_abundance_nutrients %>% 
+                  select(-c(Location_Station_Number, Location, Station_Number, Depth, Pressure, Latitude, Longitude, Density, Conductivity, Turbidity, HNA, LNA, V1, V2, V3))
+
+pca_result <- PCA(pca_data, scale.unit = TRUE, graph = FALSE)
+
+# Extract PCA results for individuals and variables
+pca_ind <- as.data.frame(pca_result$ind$coord)  # Individual coordinates
+pca_var <- as.data.frame(pca_result$var$coord)  # Variable coordinates
+
+# Add metadata to PCA individual results
+pca_ind <- cbind(pca_ind,
+                 Location_Station_Number = as.factor(ctd_profiles_abundance_nutrients$Location_Station_Number),
+                 Location = as.factor(ctd_profiles_abundance_nutrients$Location),
+                 Depth = ctd_profiles_abundance_nutrients$Depth)
+
+# Add midpoints for arrows
+pca_var <- pca_var %>%
+  mutate(mid_x = Dim.1 * 1.1, mid_y = Dim.2 * 1.1)
+
+
+# Define a custom color palette with 15 distinct colors
+palette_15 <- colorRampPalette(brewer.pal(9, "Set1"))(15)
+
+
+# Main PCA plot without legend
+main_plot <- ggplot() +
+  # Add the unit circle
+  annotate("path",
+           x = cos(seq(0, 2 * pi, length.out = 100)),
+           y = sin(seq(0, 2 * pi, length.out = 100)),
+           color = "gray", linetype = "dashed") +
+  # Add a cross at (0, 0)
+  geom_hline(yintercept = 0, linetype = "dotted", color = "gray30", size = 1.5) +
+  geom_vline(xintercept = 0, linetype = "dotted", color = "gray30", size = 1.5) +
+  # Add ellipses by Location
+  stat_ellipse(data = pca_ind, 
+               aes(x = Dim.1, y = Dim.2, group = Location, color = Location, fill = Location), 
+               geom = "polygon", alpha = 0.3, linetype = "dashed", size = 1) +
+  # Plot individuals with different colors, shapes, and black borders
+  geom_point(data = pca_ind, 
+             aes(x = Dim.1, y = Dim.2, fill = Location_Station_Number, shape = Location), 
+             size = 4) +  # Adjust point size
+  # Plot loadings (arrows for variables)
+  geom_segment(data = pca_var, 
+               aes(x = 0, y = 0, xend = Dim.1 * 1.5, yend = Dim.2 * 1.5), 
+               arrow = arrow(length = unit(0.3, "cm")), color = "black") +
+  # Add variable names at the midpoint of arrows
+  geom_text(data = pca_var, 
+            aes(x = mid_x * 1.5, y = mid_y * 1.5, label = rownames(pca_var)),
+            vjust = -0.5, hjust = 0.5, fontface = 'bold') +
+  # Apply fixed custom palette
+  scale_fill_manual(values = custom_palette) +
+  scale_color_manual(values = c("PE477" = "#0c1844", "PE486" = "#850000")) +
+  scale_shape_manual(values = c("PE477" = 21, "PE486" = 24)) +
+  labs(title = "PCA biplot", x = "PC1 (35.19 %)", y = "PC2 (28.68 %)") +
+  theme_bw() +
+  theme(legend.position = "none",
+        axis.title = element_text(face = 'bold', size = 12),
+        axis.text = element_text(size = 10))  # Remove legends from main plot
+
+# Plot to extract shape legend
+shape_legend_plot <- ggplot() +
+  geom_point(data = pca_ind, 
+             aes(x = Dim.1, y = Dim.2, shape = Location), size = 3) +
+  scale_shape_manual(values = c("PE477" = 21, "PE486" = 24), name = "Location") +
+  theme_void() +  # Remove axis elements
+  theme(legend.position = "right",
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 9))
+
+# Extract shape legend
+shape_legend <- cowplot::get_legend(shape_legend_plot)
+
+# Plot to extract fill legend
+fill_legend_plot <- ggplot() +
+  geom_point(data = pca_ind, 
+             aes(x = Dim.1, y = Dim.2, fill = Location_Station_Number), size = 3, shape = 21) +
+  scale_fill_manual(values = custom_palette, name = "Location_Station_Number") +
+  theme_void() +  # Remove axis elements
+  theme(legend.position = "right",
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 9))
+
+# Extract fill legend
+fill_legend <- cowplot::get_legend(fill_legend_plot)
+
+
+# Combine legends into a single column
+combined_legends <- plot_grid(
+  shape_legend,
+  fill_legend,
+  ncol = 1,  # Arrange in a single column
+  align = "v",
+  rel_heights = c(1, 3)
+)
+
+# Combine the main plot and legends
+final_plot <- plot_grid(
+  main_plot,           # Main PCA plot
+  combined_legends,    # Combined legends
+  ncol = 2,            # Arrange side by side
+  rel_widths = c(4, 1) # Adjust relative widths
+)
+
+# Display the final plot
+print(final_plot)
+
+# ggsave(
+#   plot = final_plot,
+#   filename = "./figures/pca_biplot_3depths.svg",
+#   device = "svg",
+#   dpi = 800,
+#   width = 28,
+#   height = 22,
+#   units = "cm"
+# )
+
+```
+
+# Redundancy Anlaysis
+
+```{r}
+
+library(vegan)
+
+# Standardize the response and explanatory variables
+response <- ctd_profiles_abundance_nutrients %>% 
+            select(Total_Bacteria, Total_Viruses, VBR)
+
+explanatory <- ctd_profiles_abundance_nutrients %>% 
+               select(Depth, Salinity, Temperature, Nitrite, Phosphate, Silicate, Nitrate, Fluorescence, Oxygen)
+
+response_scaled <- scale(response)
+explanatory_scaled <- scale(explanatory)
+rda_result <- rda(response_scaled ~ ., data = as.data.frame(explanatory_scaled))
+summary(rda_result)
+anova(rda_result, by = "axis", permutations = 999)
+plot(rda_result, scaling = 2, main = "RDA Biplot")
+
+```
+
+
+
+
+```{r}
+# Reshape the data into long format for plotting
+ctd_long <- ctd_profiles_abundance_nutrients %>%
+  pivot_longer(
+    cols = c(Salinity, Temperature, Density, Conductivity, Oxygen, Turbidity, Fluorescence),
+    names_to = "Variable",
+    values_to = "Value"
+  ) %>%
+  mutate(
+    Variable = factor(Variable, levels = c("Salinity", "Temperature", "Density", 
+                                           "Conductivity", "Oxygen", "Turbidity", "Fluorescence"))
+  )
+
+# Create grouped boxplots by Location
+ggplot(ctd_long, aes(x = as.factor(Location), y = Value, fill = as.factor(Location))) +
+  geom_boxplot(outlier.color = "red", outlier.size = 1) +
+  scale_fill_manual(values = c("PE477" = lighten("#0c1844", 0.4), "PE486" = lighten("#850000", 0.2))) +
+  facet_wrap(~Variable, scales = "free_y", nrow = 2) +
+  labs(
+    title = "Grouped Boxplots of Environmental Variables by Location",
+    x = "Location",
+    y = "Value",
+    fill = "Location"
+  ) +
+  theme_bw(base_size = 14) +
+  theme(legend.position = "right")
+```
+
+
