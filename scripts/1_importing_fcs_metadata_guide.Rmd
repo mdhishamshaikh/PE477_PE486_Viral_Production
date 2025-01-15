@@ -3,6 +3,7 @@ title: "importing_fcs_metadata"
 author: "Hisham M Shaikh"
 date: "2023-08-11"
 output: html_document
+
 ---
 
 **AIM: To extract and wrangle virus counts from viral production assay**\
@@ -16,7 +17,7 @@ Steps include:\
 5. Perform a small test.\
 6. Extract cytoplots.\
 7. Extract counts.\
-8. Ajust TE and tidy data.\
+8. Adjust TE and tidy data.\
 \
 \
 **1. Define general variables**\
@@ -24,13 +25,14 @@ Define the working directory `work_dir`.\
 This could be done by using `getwd()` function.\
 
 ```{r}
-work_dir<- paste0(getwd(), "/../")
+work_dir<- normalizePath(paste0(getwd(), "/../")) #adjust working directory accordingly. This is the R project folder
+source(here::here("scripts", "1_importing_fcs_metadata_source.R"))
 ```
 
 Define `project_title`\
 
 ```{r}
-project_title<- "PE_Cruises"
+project_title<- "PE_Cruises_test"
 ```
 
 To begin with you'll have to define a few variables.\
@@ -42,8 +44,8 @@ Also, to install and load all the required libraries.\
 Use the function `set_up_vp_count` for this.\
 
 ```{r}
-source(here("scripts", "1_importing_fcs_metadata_source.R"))
-set_up_vp_count(project_title = "PE_Cruises")
+source(here::here("scripts", "1_importing_fcs_metadata_source.R"))
+set_up_vp_count()
 ```
 
 **3.  Import and process metadata file**\
@@ -53,7 +55,9 @@ Please ensure that you have the following parameters mentioned in your metadata 
 ADD THE PARAMETERS HERE\
 
 ```{r}
-metadata_processing(paste0(work_dir,"/Metadata/PE_Cruises_VP_Metadata.xlsx"), extension = ".xlsx", project_title = "PE_Cruises")
+metadata_processing(paste0(work_dir,"Metadata/PE_Cruises_VP_Metadata.xlsx"), extension = ".xlsx", project_title = "PE_Cruises_test")
+
+metadata <- metadata[1:10,]
 ```
 This function also moves a copy of formatted metadata file in `./data/metadata` folder
 and also in the global environment\
@@ -63,17 +67,17 @@ We can utilize the `Sample_Name` variable in the `metadata` file to copy files f
 We need to provide the origin of these FCS files. Files will be copied to `./data/raw_data`.\
 
 ```{r}
-origin<- "C:/Users/hisham.shaikh/OneDrive - UGent/Fieldwork/202008_Biweekly_Sampling_NIOZ/NJ2020_RawData/NJ2020_AllData/"
+origin<- paste0(work_dir,"./Data/") # Use absolute path
 
-import_fcs(origin)
+import_fcs(origin, project_title)
 ```
 
 
-**5. Creating Ref file**\
+**5. Creating Ref file**\ #NOT NEEDED ANYMORE
 You need to provide an fcs file. Preferably a file with viruses, as they have more 
 events. This is important when analysing viruses and bacteria from different staining protocols.\
 ```{r}
-ref_fcs_create("vi201104.052")
+#ref_fcs_create("vi201104.052")
 ```
 
 **6. Setting Up for running flowcore**\
@@ -116,6 +120,8 @@ Add a gating function .\
   
   translist_bv<- transformList(detectors, logTransform())
 }
+
+populate_gate_df()
 ```
 
 **7.Perform a small test**\

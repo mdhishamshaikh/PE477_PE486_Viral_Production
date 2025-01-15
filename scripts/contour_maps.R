@@ -386,6 +386,220 @@ ggplot() +
 
 
 # Saving 
+# 0.0 Set up ####
+
+# Loading necessary libraries 
+library(tidyverse)
+library(terra)
+library(cowplot)
+library(colorspace)
 
 
+
+
+# Loading the csv file with CTD, nutrients, and abundance data from 7 m, 15 m, and 30 m.
 map_data <- read.csv("./results/ctd_profiles_abundance_nutrients_3_depths.csv")
+
+
+# Defining custom color palette
+custom_color_palette <- c(
+  "PE477_1" = "#1f77b4", "PE477_2" = "#ff7f0e", "PE477_3" = "#2ca02c",
+  "PE477_4" = "#d62728", "PE477_5" = "#9467bd", "PE477_6" = "#8c564b",
+  "PE486_1" = "#e377c2", "PE486_2" = "#7f7f7f", "PE486_3" = "#bcbd22",
+  "PE486_4" = "#17becf", "PE486_5" = "#aec7e8", "PE486_6" = "#ffbb78",
+  "PE477_7" = "#98df8a", "PE486_7" = "#ff9896",
+  "PE477" = colorspace::lighten("#0c1844", 0.0), "PE486" = colorspace::lighten("#850000", 0.2)
+)
+ODV_colours <- c("#feb483", "#d31f2a", "#ffc000", "#27ab19", "#0db5e6", "#7139fe", "#d16cfa")
+
+
+
+# 1.0 Bathymetry map of the North Sea with sampling stations ####
+
+# Loading a 2D NetCDF downloaded from GEBCO
+bathymetry <- rast("./Metadata/gebco_2024_n60.0_s50.0_w-2.0_e7.0.nc") 
+
+# Cropping to the North Sea
+north_sea_bbox <- ext(-1.5, 6, 52, 56.5)  
+bathymetry_north_sea <- crop(bathymetry, north_sea_bbox)
+
+# Converting to data frame for ggplot2
+bathymetry_df <- as.data.frame(bathymetry_north_sea, xy = TRUE)
+colnames(bathymetry_df) <- c("Longitude", "Latitude", "Depth")
+
+# Setting all above sea surface (> 0 m) values to NA (land)
+bathymetry_df$Depth <- ifelse(bathymetry_df$Depth > 0, NA, bathymetry_df$Depth)  
+
+# Reversing depth
+bathymetry_df$Depth <- -bathymetry_df$Depth 
+
+
+# Subsettig 7 m data for ease
+
+data_7m <- map_data %>%
+  dplyr::filter(Depth == 7)
+
+# Plotting bathymetry
+North_Sea_bathymetry_sampling_stations_plot<-  ggplot() +
+    geom_raster(data = bathymetry_df, aes(x = Longitude, y = Latitude, fill = Depth), na.rm = TRUE) +
+    scale_fill_gradientn(
+      colours = rev(c(
+        "white",       
+        "#E3F2FD",    
+        "#90CAF9",
+        "#42A5F5",    
+        "#0D47A1",   
+        "#0B408A",   
+        "#082E63",    
+        "#04143D",     
+        "#020822",     
+        "#010417",    
+        "black"       
+      )),
+      values = scales::rescale(c(0, -5, -10, -15, -20, -25, 
+                                 -30, -35, -40, -45, -50)), 
+      name = "Depth (m)", 
+      na.value = "black",
+      guide = guide_colorbar(reverse = TRUE)
+    ) +
+   geom_point(data = data_7m, aes(x = Longitude, y = Latitude, color = Location, shape = Location),
+              size = 3)+
+    geom_text(data = data_7m, aes(x = Longitude, y = Latitude, label = Station_Number), 
+              color = "black", size = 5, nudge_y = 0.15, nudge_x = 0.1, check_overlap = F) + 
+    +scale_colour_gradientn(colours = rev(ODV_colours))  +
+    labs(
+      x = "Longitude",
+      y = "Latitude"
+    ) +
+    coord_fixed(ratio = 1,
+                expand = F
+    ) + 
+    theme_bw(base_size = 14) +
+    theme(
+      legend.position = "right",
+      legend.title = element_text(size = 14),
+      legend.text = element_text(size = 12)
+    )
+
+North_Sea_bathymetry_sampling_stations_plot
+
+ggsave("./figures/North_Sea_bathymetry_sampling_stations.svg", plot = North_Sea_bathymetry_sampling_stations_plot,
+       dpi = 800, width = 8.27,  units = "in")
+
+
+# 2.0 Plotting biotic and abiotic variables on North sea bathymetry ####
+
+
+plot_bathymetry_cowplot <- function(bathymetry_df, data, depths, custom_palette, variable_groups, output_prefix = "bathymetry_plots") {
+  
+  # Looping through each depth
+  for (depth in depths) {
+   
+    data_depth <- data %>%
+      filter(Depth == depth)
+    
+    # Looping through variable groups 
+    for (i in seq_along(variable_groups)) {
+      variables_to_plot <- variable_groups[[i]]
+      
+      # Generating individual plots for each variable
+      plot_list <- lapply(variables_to_plot, function(var) {
+        # Pivot longer for the current variable
+        # data_long <- data_depth %>%
+        #   select(Location_Station_Number, Location, Station_Number, Latitude, Longitude, Depth, all_of(var)) %>%
+        #   pivot_longer(cols = all_of(var), names_to = "variable", values_to = "value")
+        # 
+        # Generate the plot for the current variable
+        ggplot() +
+          # Raster for bathymetry
+          geom_raster(data = bathymetry_df, aes(x = Longitude, y = Latitude, fill = Depth), na.rm = TRUE) +
+          # Gradient fill for Depth
+          scale_fill_gradientn(
+            colours = rev(c(
+              "white", "#E3F2FD", "#90CAF9", "#42A5F5", "#0D47A1", 
+              "#0B408A", "#082E63", "#04143D", "#020822", "#010417", "black"
+            )),
+            values = scales::rescale(c(0, -5, -10, -15, -20, -25, 
+                                       -30, -35, -40, -45, -50)),
+            name = "Depth (m)",
+            na.value = "black",
+            guide = guide_colorbar(reverse = TRUE)
+          ) +
+          guides(fill = "none") +
+          # Points for data
+          geom_point(data = data_depth, aes(x = Longitude, y = Latitude, colour = !!sym(var)),
+                     size = 10, alpha = 0.8, shape = 19) +
+          # Station numbers as text labels
+          geom_text(data = data_depth, aes(x = Longitude, y = Latitude, label = Station_Number), 
+                    color = "black", size = 4, nudge_y = 0, nudge_x = 0, check_overlap = FALSE) + 
+          # Color scale for variable value
+          scale_colour_gradientn(colours = rev(custom_palette)) +
+          # Facet by Location
+          facet_wrap(. ~ Location, ncol = 2, nrow = 2) +
+          labs(
+            x = "Longitude",
+            y = "Latitude",
+            title = paste("Depth:", depth, "m |", var)
+          ) +
+          coord_fixed(ratio = 1, expand = FALSE) + 
+          theme_bw(base_size = 14) +
+          theme(
+            legend.position = "right",
+            legend.title = element_blank(),
+            legend.text = element_text(size = 12),
+            strip.background = element_rect(fill = "black"),
+            strip.text = element_text(color = "white")
+          )
+      })
+      
+      # Combine the plots for the current variable group
+      combined_plot <- plot_grid(plotlist = plot_list, ncol = 2)
+
+      # Save the combined plot as an SVG with dynamic width and height
+      n_plots <- length(plot_list)  # Number of plots in the current group
+      n_cols <- 2  # Number of columns in the grid
+      n_rows <- ceiling(n_plots / n_cols)  # Calculate the number of rows based on plots and columns
+
+      ggsave(
+        filename = paste0("./figures/", output_prefix, "_depth_", depth, "_group_", i, ".svg"),
+        plot = combined_plot,
+        width = 6 * n_cols,  # Adjust width (e.g., 6 inches per column)
+        height = 2.5 * n_rows,  # Adjust height (e.g., 5 inches per row)
+        dpi = 300
+      )
+      # # Save the combined plot as an SVG
+      # ggsave(
+      #   filename = paste0(output_prefix, "_depth_", depth, "_group_", i, ".svg"),
+      #   plot = combined_plot,
+      #   width = 12, height = 10, dpi = 300
+      # )
+    }
+  }
+}
+
+# To create split plots, adjust this list 
+variable_groups <- list(
+  c( "Temperature", "Salinity", "Density", "Conductivity", "Turbidity", "Oxygen", "Fluorescence",
+      "Nitrate", "Nitrite", "Silicate", "Phosphate", "VBR", "Total_Bacteria", "Total_Viruses")
+  #c("Total_Bacteria", "Total_Viruses", "VBR", "Nitrate", "Nitrite", "Silicate", "Phosphate")
+)
+
+# Depths to plot
+depths <- unique(map_data$Depth)
+
+# Adjusting Total Bacteria and Total Viruses to (in millions)
+map_data_adj_counts  <- map_data %>%
+  mutate(across(c(Total_Bacteria, HNA, LNA, Total_Viruses, V1, V2, V3), ~ .x / 1e+6))
+
+# Plotting
+plot_bathymetry_cowplot(
+  bathymetry_df = bathymetry_df,
+  data = map_data_adj_counts,
+  depths = depths,
+  custom_palette = ODV_colours,
+  variable_groups = variable_groups,
+  output_prefix = "bathymetry_plot"
+)
+
+
+

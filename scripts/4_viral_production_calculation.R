@@ -1,23 +1,15 @@
-library(tidyverse)
-library(devtools)
-library(readxl)
-library(ggsci)
-library(pracma)
+#AIM: To run viralprod to extract lytic and lysogenic  viral production rates 
 
-#Install viral production calculator from Github
-#install_github("mdhishamshaikh/ViralProduction_R")
-library(viralprod)
-#issues with lme4 package. It's important that we install it form source
-#install.packages("lme4", type = "source") 
-library(lme4)
+# 0.0 Setting up ####
 
+source("./scripts/0_source.R")
 
-setwd("C:/Users/hisham.shaikh/OneDrive - UGent/Projects/PE477_PE486_Viral_Production")
-#Import FCM count csv
-counts_per_mL<- read.csv("./PE_Cruises/results/PE_Cruises_per_mL.csv")
+# 1.0 Importing counts #####
+
+counts_per_mL<- read.csv("./PE_Cruises_FCS/results/PE_Cruises_FCS_per_mL.csv")
 str(counts_per_mL)
 counts_per_mL<- counts_per_mL %>%
-  dplyr::filter(counts_per_mL$Sample_Type != '0.22')
+  dplyr::filter(counts_per_mL$Sample_Type != '0.22') # 0.22 will be used for viral decay
 
 #There's some additional files that I would like to exclude from this. These are replicates with low events/sec
 #To do so I will use the selected data from the metadata file. This should have already been done before processing. 
@@ -31,7 +23,7 @@ counts_per_mL<- inner_join(counts_per_mL, selected_files, by = "Sample_Name")
 #Plotting VSC against time per assay to check for any outliers ####
 
 filtered_data <- counts_per_mL %>%
-  filter(Sample_Type %in% c("VP", "VPC"))  %>%
+  dplyr::filter(Sample_Type %in% c("VP", "VPC"))  %>%
   mutate(Location_Station = paste(Location, Station_Number, sep = "_"))
 
 # Plotting
@@ -48,7 +40,7 @@ vdc_plot <- ggplot(filtered_data, aes(x = Timepoint, y = c_Viruses/1e+6)) +
 vdc_plot
 ggsave(vdc_plot, filename = "./figures/vdc_plot.svg", width = 20, height = 5)
 
-# Fucntion to make an exclusion dataframe
+# Function to make an exclusion dataframe
 add_to_exclusion <- function(existing_df = NULL, location, station, sample_type, timepoint, replicate) {
   
   # Check if the exclusion data frame exists, if not, create it with the proper column names
@@ -94,7 +86,7 @@ add_to_exclusion <- function(existing_df = NULL, location, station, sample_type,
 #              Timepoint == 24 & 
 #              Replicate == 3))
 
-
+# I have created an exclusion datframe already, and would directly use it to exclude outliers
 exclusion_df <- read.csv("./results/viral_production_analyses/excluded_samples.csv")
 
 for (i in 1:nrow(exclusion_df)) {
@@ -122,7 +114,7 @@ vdc_filtered_plot <- ggplot(filtered_data, aes(x = Timepoint, y = c_Viruses/1e+6
   labs(#title = "Viral Abundance (c_Viruses) over Timepoints",
     x = "Timepoint",
     y = "Viral Count (c_Viruses)",
-    color = "Sample Type")
+    color = "Replicate")
 vdc_filtered_plot
 ggsave(vdc_filtered_plot, filename = "./figures/vdc_filtered_plot.svg", width = 20, height = 5)
 
@@ -137,7 +129,7 @@ vdc_filtered_lm_plot <- ggplot(filtered_data, aes(x = Timepoint, y = c_Viruses /
   labs(#title = "Viral Abundance (c_Viruses) over Timepoints",
     x = "Timepoint",
     y = "Viral Count (c_Viruses)",
-    color = "Sample Type")
+    color = "Replicate")
 vdc_filtered_lm_plot
 ggsave(vdc_filtered_lm_plot, filename = "./figures/vdc_filtered_lm_plot.svg", width = 20, height = 5)
 
@@ -161,8 +153,8 @@ wide_data <- averaged_data %>%
 # Step 3: Calculate the difference between VPC and VP treatments and their standard error
 wide_data <- wide_data %>%
   mutate(
-    difference_c_Viruses = difference_c_VirusesC - difference_c_Viruses,  # Difference between VPC and VP
-    difference_sem = sqrt((difference_semC)^2 + (difference_sem)^2)  # Simplified error calculation
+    difference_c_Viruses = mean_c_Viruses_VPC - mean_c_Viruses_VP,  # Difference between VPC and VP
+    difference_sem = sqrt((sem_c_Viruses_VPC)^2 + (sem_c_Viruses_VP)^2)  # Simplified error calculation
   )
 
 # Step 4: Plot the difference curve with standard error
@@ -293,7 +285,7 @@ str(abundance)
 #Extracting first entries per Location/Station_Number combinations, as some stations had multiple depths and this information is missing from the fiel on GitHub.
 #The first one is the depth for VP assays.
 abundance<- abundance %>%
-  filter(Depth %in% c(1, 7) )
+  dplyr::filter(Depth %in% c(1, 7) )
 
 #Some checks
 vp_check_populations(counts_per_mL)
@@ -312,9 +304,10 @@ vp_end_to_end(data = counts_per_mL ,
               original_abundances = abundance,
               methods = c(2,9,10),
               write_output = T,
-              output_dir = 'PE_Cruises_viral_production_OUTLIERS')
+              output_dir = 'results/viral_production_analyses/PE_Cruises_viral_production')
 
-# 
+
+#SOME ADDITIONAL INSPECTION ####
 # #### Visualize ####
 # 
 # cruise_vp<- read.csv("PE_Cruises/results/PE_Cruises_viral_production/vp_results_BP.csv")

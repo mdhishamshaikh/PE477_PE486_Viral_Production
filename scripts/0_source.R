@@ -1,13 +1,29 @@
 #1.0 Function to install and load packages ####
+
+
 install_and_load_packages <- function(packages) {
+  # Ensure BiocManager is installed for Bioconductor packages
+  if (!requireNamespace("BiocManager", quietly = TRUE)) {
+    install.packages("BiocManager")
+  }
+  
+  # Ensuring devtools is installed for GitHub packages
+  if (!requireNamespace("devtools", quietly = TRUE)) {
+    install.packages("devtools")
+  }
+  library(devtools)
+  
+  # Installing and loading packages
   for (package in packages) {
     if (!requireNamespace(package, quietly = TRUE)) {
       if (package %in% c("flowCore", "flowWorkspace", "ggcyto")) {
-        if (!requireNamespace("BiocManager", quietly = TRUE)) {
-          install.packages("BiocManager")
-        }
+        # Installing Bioconductor packages
         BiocManager::install(package)
+      } else if (package == "viralprod") {
+        # Installing viralprod from GitHub
+        devtools::install_github("mdhishamshaikh/ViralProduction_R")
       } else {
+        # Installing CRAN packages
         install.packages(package)
       }
     }
@@ -15,18 +31,35 @@ install_and_load_packages <- function(packages) {
   }
 }
 
-# List of packages you want to install and load
-packages_to_load <- c("tidyverse", 
-                      "flowWorkspace",
-                      "flowCore",
-                      "scales",
-                      "readxl",
-                      "ggcyto",
-                      "ggsci",
-                      "svglite")
+# List of packages to install and load
+packages_to_load <- c(
+  "tidyverse", 
+  "flowWorkspace",
+  "flowCore",
+  "scales",
+  "readxl",
+  "ggcyto",
+  "ggsci",
+  "svglite",
+  "oce",
+  "terra",
+  "cowplot",
+  "viridis",
+  "viralprod",
+  "pracma",
+  "tidyplots",
+  "ggpubr",
+  "car"
+)
 
-# Call the function with the list of packages
+# Loading packages
 install_and_load_packages(packages_to_load)
+
+# Ensuring lme4 is installed from source
+if (!requireNamespace("lme4", quietly = TRUE)) {
+  install.packages("lme4", type = "source")
+}
+library(lme4)
 
 
 
@@ -34,12 +67,14 @@ install_and_load_packages(packages_to_load)
 #2.0 Setting up directories for data, metadata, results, and reference files####
 set_up_vp_count<- function(project_title){
   
-
+  
   { #create directories
     dir_to_create<- c("/data", "/results", "/data/raw_data", 
                       "/data/metadata")
     
-    dir_to_create <- paste0(proj_dir, dir_to_create)
+    .GlobalEnv$work_dir <- paste0(getwd(), "/", project_title)
+    
+    dir_to_create <- paste0(work_dir, dir_to_create)
     
     
     # Create the directories if they don't already exist
@@ -50,10 +85,10 @@ set_up_vp_count<- function(project_title){
         cat("Directory", dir, "already exists.\n")
       }
     }
-    .GlobalEnv$work_dir <- paste0(getwd(), "/", project_title)
-   
+    
+    
     rm(dir_to_create)    
-        
+    
   }
 }
 
@@ -78,7 +113,7 @@ metadata_processing<- function(file_path, extension = ".xlsx", sheet =NULL, proj
     mutate(Date_Measurement= as.Date(as.character(Date_Measurement), format))
   .GlobalEnv$metadata<- metadata
   
-  write.csv(metadata, file = paste0(work_dir, "./data/metadata/",project_title,"_metadata.csv"), row.names=F)
+  write.csv(metadata, file = paste0(work_dir, "/data/metadata/",project_title,"_metadata.csv"), row.names=F)
   print("Metadata processed and stored under `data/metadata`")
   return(metadata)
   
@@ -96,8 +131,8 @@ import_fcs<- function(fcs_dir, project_title, ...){
     file_source<- paste0(fcs_dir, metadata$Sample_Name[sample])
     file_dest <-  paste0(work_dir, "/data/raw_data")
     file.copy(from = file_source,
-            to = file_dest,
-            recursive = F)
+              to = file_dest,
+              recursive = F)
   }
   if( "FALSE" %in% (metadata$Sample_Name %in% list.files(file_dest))) { #files are missing in the raw_data folder
     print("Missing files. Check `missing_fcs_file`")
@@ -164,23 +199,23 @@ populate_gate_df <- function(sample_range = c(1: length(metadata$Sample_Index)),
   
   
   if (!exists("gate_df")) {
-  gate_df<- data.frame(matrix(ncol = 16, nrow = nrow(metadata)))
-  gate_df[,1:2]<- metadata[,c('Sample_Index', 'Sample_Name')]
-  
-  colname<- c("Sample_Index", "Sample_Name",
-              "g_b_ssc", "g_b_fl1",
-              "g_v_ssc", "g_v_fl1",
-              "g_hna_ssc", "g_hna_fl1",
-              "g_lna_ssc", "g_lna_fl1",
-              "g_v1_ssc", "g_v1_fl1",
-              "g_v2_ssc", "g_v2_fl1",
-              "g_v3_ssc", "g_v3_fl1")
-  colnames(gate_df)<- colname
-  
-  
-  for(col in colname[-c(1:2)]) {
-    gate_df[[col]] <- vector("list", nrow(gate_df))
-  }
+    gate_df<- data.frame(matrix(ncol = 16, nrow = nrow(metadata)))
+    gate_df[,1:2]<- metadata[,c('Sample_Index', 'Sample_Name')]
+    
+    colname<- c("Sample_Index", "Sample_Name",
+                "g_b_ssc", "g_b_fl1",
+                "g_v_ssc", "g_v_fl1",
+                "g_hna_ssc", "g_hna_fl1",
+                "g_lna_ssc", "g_lna_fl1",
+                "g_v1_ssc", "g_v1_fl1",
+                "g_v2_ssc", "g_v2_fl1",
+                "g_v3_ssc", "g_v3_fl1")
+    colnames(gate_df)<- colname
+    
+    
+    for(col in colname[-c(1:2)]) {
+      gate_df[[col]] <- vector("list", nrow(gate_df))
+    }
   }
   
   # Range of samples to update
@@ -231,7 +266,7 @@ populate_gate_df <- function(sample_range = c(1: length(metadata$Sample_Index)),
 }
 
 gates<- function(gate_index, gate_df2 = gate_df, ... #index
-                 ){
+){
   polycut<- matrix(c(gate_df2$g_b_ssc[gate_index][[1]][[1]], gate_df2$g_b_fl1[gate_index][[1]][[1]]), 
                    nrow = length(gate_df2$g_b_ssc[gate_index][[1]][[1]]), 
                    ncol=2)
@@ -264,7 +299,7 @@ gates<- function(gate_index, gate_df2 = gate_df, ... #index
   translist_bv<<- transformList(detectors, logTransform())
   
 }
-  
+
 
 # 
 # ref_fcs_create<- function(ref_fcs_file){
@@ -475,9 +510,9 @@ gatingset_bv_plots<- function(gate_index, flowset, bins = 600, ...){ #flowset he
   p<- p + geom_gate("Viruses", colour = "black", size = 1) + geom_stats("Viruses", type = c("gate_name", "count"), location = 'plot', adjust = c(0.9, 0.2), colour = "black")
   p<- p + geom_gate("Bacteria", colour = "black", size = 1) + geom_stats("Bacteria", type = c("gate_name", "count"), location = 'plot',  adjust = c(0.4, 1), colour = "black")
   p<- p + geom_gate(c("HNA_Bacteria", "LNA_Bacteria"), colour = "red", size = 0.8) + geom_stats(c("HNA_Bacteria", "LNA_Bacteria"), type = c("gate_name", "count"#, "percent"
-                                                                                                                                            ), adjust = c(-0.4, 0.8), colour = "red")
+  ), adjust = c(-0.4, 0.8), colour = "red")
   p<- p + geom_gate(c("V1", "V2", "V3"), colour = "blue", size = 0.8) + geom_stats(c("V1", "V2", "V3"), type = c("gate_name", "count"#, "percent"
-                                                                                                                 ),  adjust = c(-0.5,0.7), colour = "blue")
+  ),  adjust = c(-0.5,0.7), colour = "blue")
   
   print(p)
   
@@ -494,22 +529,22 @@ get_bv_plots<- function(df = metadata, gate = "same", write_pdf = T, test = F, .
   
   #create a PDF file to store all the plots
   
-    pdf(paste0(work_dir,"/results/",project_title,"_plots.pdf"), onefile =T)
-    print(paste0(work_dir, "/results/",project_title,"_plots.pdf created"))
+  pdf(paste0(work_dir,"/results/",project_title,"_plots.pdf"), onefile =T)
+  print(paste0(work_dir, "/results/",project_title,"_plots.pdf created"))
   
-     
+  
   if (write_pdf == T){
     
     
-      if(test == T){
-        .GlobalEnv$project_title2<- paste0(project_title, "_test")
-      }else if(test == F){ 
-        .GlobalEnv$project_title2<- project_title
-      }
-      pdf(paste0(work_dir,"/results/",project_title2,"_plots.pdf"), onefile =T)
-      print(paste0(work_dir,"/results/",project_title2,"_plots.pdf created"))
-      
-     
+    if(test == T){
+      .GlobalEnv$project_title2<- paste0(project_title, "_test")
+    }else if(test == F){ 
+      .GlobalEnv$project_title2<- project_title
+    }
+    pdf(paste0(work_dir,"/results/",project_title2,"_plots.pdf"), onefile =T)
+    print(paste0(work_dir,"/results/",project_title2,"_plots.pdf created"))
+    
+    
   }
   
   t<-0 #counter to 0
@@ -549,7 +584,7 @@ cytoplot<- function(index, metadata_df = metadata, bins = 600, ...){
   
   fcs_file<- metadata_df[metadata_df$Sample_Index[index], ]$Sample_Name
   
-  .GlobalEnv$fcs_data<- paste0(paste0(work_dir,"/data/raw_data/", fcs_file))
+  .GlobalEnv$fcs_data<- paste0(work_dir,"/data/raw_data/", fcs_file)
   
   plot<- read_transform_fs_bv(fcs_data, ...)  %>%
     gatingset_bv_plots(gate_index = index, bins, ...)
@@ -723,96 +758,99 @@ adjust_TE<- function(counts_metadata_df = counts_metadata, write_csv = T, output
     ]
   }
   if (write_csv == T){
-    write.csv(otpt_df, paste0("PE_Cruises/results/", project_title, "_per_mL.csv"), row.names = F)
+    write.csv(otpt_df, paste0(work_dir, "/results/", project_title, "_per_mL.csv"), row.names = F)
   }
   print("Counts were adjusted with TE")
   return(otpt_df)
   
 }
 
-bacterial_count_overview_plots<- function(data= NJ2020){
-  plot1<- ggplot(data, aes(x = Sample_Type, y = c_Bacteria, col = as.factor(Station_Number), group = interaction(Sample_Type,Station_Number)))+
-    geom_violin(aes(group = Sample_Type, fill = Sample_Type), alpha = 0.15, color = NA)+
-    labs(fill = "Sample Type")+
-    scale_fill_lancet()+
-    geom_boxplot( fill = 'white', outlier.alpha =0)+
-    guides(color = guide_legend(title = "Expt No"))+
-    geom_jitter(alpha = 1.0, aes(shape = as.factor(Timepoint)), position = position_jitterdodge(jitter.width = 2, dodge.width = 0.9))+
-    labs(shape = "Timepoint")+
-    scale_color_lancet()+
-    theme_classic()+
-    labs(title = "Overview of Bacterial Counts per Sample Type")+
-    xlab("Sample Type")+
-    ylab("Total Virus Count")+
-    scale_shape_manual(values = c(19, 0, 1, 2, 3, 4, 7, 8, 10, 15))
+
+#### Temperature Salinity plot function #####
+# At https://github.com/Davidatlarge/ggTS.git
+# https://doi.org/10.5281/zenodo.3901308
+
+ggTS <- function(
+    sal, # vector of salinity values
+    pot.temp, # vector of potential temperature values in degree C
+    reference.p = 0, # reference pressure which was also used to calculate potential temperature, defaults to 0
+    col.par = NA, # optional vector corresponding to "sal" and "pot.temp" of a parameter to be displayed as color along the 
+    col.name = "col.par" # optional name of the "col.par" to be used on the color bar
+) 
+{
+  # packages
+  library(gsw)
+  library(ggplot2)
   
-  print(plot1)
-  ggsave("./results/TotalBacteria_perSampleType.svg", width = 20, height = 20, units = "cm")
+  # make TS long table
+  TS <- expand.grid(
+    sal = seq(floor(min(sal, na.rm = TRUE)), ceiling(max(sal, na.rm = TRUE)), length.out = 100),
+    pot.temp = seq(floor(min(pot.temp, na.rm = TRUE)), ceiling(max(pot.temp, na.rm = TRUE)), length.out = 100)
+  )
+  TS$density <- gsw_rho_t_exact(SA = TS$sal, t = TS$pot.temp, p = reference.p) - 1000 # the function calculates in-situ density, but because potential temperature and a single reference pressure is used the result equals potential density at reference pressure
   
+  # isopycnal labels 
+  # +- horizontal isopycnals
+  h.isopycnals <- subset(TS,
+                         sal == ceiling(max(TS$sal)) & # selects all rows where "sal" is the max limit of the x axis
+                           round(density,1) %in% seq(min(round(TS$density*2)/2, na.rm = TRUE),
+                                                     max(round(TS$density*2)/2, na.rm = TRUE),
+                                                     by = .5)) # selects any line where the rounded denisty is equal to density represented by any isopycnal in the plot
+  if(nrow(h.isopycnals)>0){
+    h.isopycnals$density <- round(h.isopycnals$density, 1) # rounds the density
+    h.isopycnals <- aggregate(pot.temp~density, h.isopycnals, mean) # reduces number of "pot.temp" values to 1 per each unique "density" value
+  }
   
-  plot2<- ggplot(data, aes(x = as.factor(Station_Number), y = c_Bacteria, col = as.factor(Sample_Type), group = interaction(Sample_Type,Station_Number)))+
-    geom_violin(aes(group = as.factor(Station_Number), fill = as.factor(Station_Number)), alpha = 0.25, color = NA)+
-    labs(fill = "Expt No")+
-    scale_fill_lancet()+
-    geom_boxplot( fill = 'white', outlier.alpha =0)+
-    guides(color = guide_legend(title = "Expt No"))+
-    geom_jitter(alpha = 1.0, aes(shape = as.factor(Timepoint)), position = position_jitterdodge(jitter.width = 2, dodge.width = 0.9))+
-    labs(shape = "Timepoint")+
-    scale_color_lancet()+
-    theme_classic()+
-    labs(title = "Overview of Bacterial Counts per Expt No")+
-    xlab("Sample Type")+
-    ylab("Total Virus Count")+
-    scale_shape_manual(values = c(19, 0, 1, 2, 3, 4, 7, 8, 10, 15))
+  # +- vertical isopycnals
+  if(nrow(h.isopycnals)==0){ # if the isopycnals are not +- horizontal then the df will have no rows
+    rm(h.isopycnals) # remove the no-line df
+    
+    v.isopycnals <- subset(TS, # make a df for labeling vertical isopycnals
+                           pot.temp == ceiling(max(TS$pot.temp)) & # selects all rows where "sal" is the max limit of the x axis
+                             round(density,1) %in% seq(min(round(TS$density*2)/2),
+                                                       max(round(TS$density*2)/2),
+                                                       by = .5)) # selects any line where the rounded denisty is equal to density represented by any isopycnal in the plot
+    v.isopycnals$density <- round(v.isopycnals$density, 1) # rounds the density
+    v.isopycnals <- aggregate(sal~density, v.isopycnals, mean) # reduces number of "pot.temp" values to 1 per each unique "density" value
+  }
   
-  print(plot2)
-  ggsave("./results/TotalBacteria_perExptNo.svg", width = 30, height = 20, units = "cm")
+  # data
+  data <- data.frame(sal, pot.temp, col.par)  
   
+  # plot
+  p1 <- ggplot() +
+    geom_contour(data = TS, aes(x = sal, y = pot.temp, z = density), col = "grey", linetype = "dashed",
+                 breaks = seq(min(round(TS$density*2)/2, na.rm = TRUE), # taking density times 2, rounding and dividing by 2 rounds it to the neares 0.5
+                              max(round(TS$density*2)/2, na.rm = TRUE), 
+                              by = .5)) +
+    geom_point(data = data[is.na(data$col.par),], # plot NA values in black to show resolution of "pot.temp" and "sal"
+               aes(sal, pot.temp), color = "black") +
+    geom_path(data = data, aes(sal, pot.temp), color = "black") +
+    geom_point(data = data[!is.na(data$col.par),], # plot only the points that have a z value in color according to z
+               aes(sal, pot.temp, color = col.par), size = 3, alpha = 0.6) +   
+    annotate(geom = "text", x = floor(min(TS$sal, na.rm = TRUE)), y = ceiling(max(TS$pot.temp, na.rm = TRUE)), 
+             hjust = "inward", vjust = "inward", color = "grey60", size = 14,
+             label = paste0('sigma',"[",reference.p,"]"), parse = T) +
+    scale_x_continuous(name = "salinity", expand = c(0,0), 
+                       limits = c(floor(min(TS$sal, na.rm = TRUE)), ceiling(max(TS$sal, na.rm = TRUE)))) + # use range of "sal" for x axis
+    scale_y_continuous(name = "potential temperature [°C]", 
+                       limits = c(floor(min(TS$pot.temp, na.rm = TRUE)), ceiling(max(TS$pot.temp, na.rm = TRUE)))) + # use range of "pot.temp" for y axis
+    scale_color_gradientn(colors = c("blue", "green", "yellow", "red"), name = col.name) +
+    theme_classic() + theme(text = element_text(size=14))
+  
+  # add isopycnal labels if isopycnals run +- horizontal
+  if(exists("h.isopycnals")){
+    p1 <- p1 + geom_text(data = h.isopycnals,
+                         aes(x = ceiling(max(TS$sal)), y = pot.temp, label = density),
+                         hjust = "inward", vjust = 0, col = "grey")
+  }
+  
+  # add isopycnal labels if isopycnals run +- vertical
+  if(exists("v.isopycnals")){
+    p1 <- p1 + geom_text(data = v.isopycnals,
+                         aes(x = sal, y = ceiling(max(TS$pot.temp)), label = density),
+                         vjust = "inward", hjust = 0, col = "grey")
+  }
+  
+  return(p1)
 }
-
-viral_count_overview_plots<- function(data = NJ2020){
-  plot1<- ggplot(data, aes(x = Sample_Type, y = c_Viruses, col = as.factor(Station_Number), group = interaction(Sample_Type,Station_Number)))+
-    geom_violin(aes(group = Sample_Type, fill = Sample_Type), alpha = 0.15, color = NA)+
-    labs(fill = "Sample Type")+
-    scale_fill_lancet()+
-    geom_boxplot( fill = 'white', outlier.alpha =0)+
-    guides(color = guide_legend(title = "Expt No"))+
-    geom_jitter(alpha = 1.0, aes(shape = as.factor(Timepoint)), position = position_jitterdodge(jitter.width = 2, dodge.width = 0.9))+
-    labs(shape = "Timepoint")+
-    scale_color_lancet()+
-    theme_classic()+
-    labs(title = "Overview of Viral Counts per Sample Type")+
-    xlab("Sample Type")+
-    ylab("Total Virus Count")+
-    scale_shape_manual(values = c(19, 0, 1, 2, 3, 4, 7, 8, 10, 15))
-  
-  print(plot1)
-  ggsave("./results/TotalViruses_perSampleType.svg", width = 20, height = 20, units = "cm")
-  
-  plot2<- ggplot(data, aes(x = as.factor(Station_Number), y = c_Viruses, col = as.factor(Sample_Type), group = interaction(Sample_Type,Station_Number)))+
-    geom_violin(aes(group = as.factor(Station_Number), fill = as.factor(Station_Number)), alpha = 0.25, color = NA)+
-    labs(fill = "Expt No")+
-    scale_fill_lancet()+
-    geom_boxplot( fill = 'white', outlier.alpha =0)+
-    guides(color = guide_legend(title = "Expt No"))+
-    geom_jitter(alpha = 1.0, aes(shape = as.factor(Timepoint)), position = position_jitterdodge(jitter.width = 2, dodge.width = 0.9))+
-    labs(shape = "Timepoint")+
-    scale_color_lancet()+
-    theme_classic()+
-    labs(title = "Overview of Viral Counts per Expt No")+
-    xlab("Sample Type")+
-    ylab("Total Virus Count")+
-    scale_shape_manual(values = c(19, 0, 1, 2, 3, 4, 7, 8, 10, 15))
-  
-  
-  print(plot2)
-  ggsave("./results/TotalViruses_perExptNo.svg", width = 30, height = 20, units = "cm")
-  
-}    
-    
-    
-
-  
-  
-  
-  

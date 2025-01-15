@@ -215,7 +215,8 @@ custom_palette <- c(
   "PE486_1" = "#e377c2", "PE486_2" = "#7f7f7f", "PE486_3" = "#bcbd22",
   "PE486_4" = "#17becf", "PE486_5" = "#aec7e8", "PE486_6" = "#ffbb78",
   "PE477_7" = "#98df8a", "PE486_7" = "#ff9896",
-  "PE477" = lighten("#0c1844", 0.4), "PE486" = lighten("#850000", 0.4)
+   "PE477" = "#0c1844", "PE486" = "#850000"
+  # "PE477" = lighten("#0c1844", 0.4), "PE486" = lighten("#850000", 0.4)
 )
 
 # Add Cluster column to the PCA scores dataframe
@@ -684,10 +685,13 @@ library(vegan)
 
 # Standardize the response and explanatory variables
 response <- ctd_profiles_abundance_nutrients %>% 
-            select(Total_Bacteria, Total_Viruses, VBR)
+            select(Total_Bacteria, Total_Viruses, VBR
+                   )
 
 explanatory <- ctd_profiles_abundance_nutrients %>% 
-               select(Depth, Salinity, Temperature, Nitrite, Phosphate, Silicate, Nitrate, Fluorescence, Oxygen)
+               select(Salinity, Temperature, #Nitrite, 
+                      Phosphate, Silicate,
+                      Nitrate, Fluorescence, Oxygen)
 
 response_scaled <- scale(response)
 explanatory_scaled <- scale(explanatory)
@@ -705,22 +709,22 @@ plot(rda_result, scaling = 2, main = "RDA Biplot")
 # Reshape the data into long format for plotting
 ctd_long <- ctd_profiles_abundance_nutrients %>%
   pivot_longer(
-    cols = c(Salinity, Temperature, Density, Conductivity, Oxygen, Turbidity, Fluorescence),
+    cols = c(Salinity, Temperature, Density, Conductivity, Oxygen, Turbidity, Fluorescence, Total_Bacteria, Total_Viruses, VBR),
     names_to = "Variable",
     values_to = "Value"
   ) %>%
   mutate(
     Variable = factor(Variable, levels = c("Salinity", "Temperature", "Density", 
-                                           "Conductivity", "Oxygen", "Turbidity", "Fluorescence"))
+                                           "Conductivity", "Oxygen", "Turbidity", "Fluorescence", "Total_Bacteria", "Total_Viruses", "VBR"))
   )
 
 # Create grouped boxplots by Location
 ggplot(ctd_long, aes(x = as.factor(Location), y = Value, fill = as.factor(Location))) +
   geom_boxplot(outlier.color = "red", outlier.size = 1) +
-  scale_fill_manual(values = c("PE477" = lighten("#0c1844", 0.4), "PE486" = lighten("#850000", 0.2))) +
+ # scale_fill_manual(values = c("PE477" = lighten("#0c1844", 0.4), "PE486" = lighten("#850000", 0.2))) +
   facet_wrap(~Variable, scales = "free_y", nrow = 2) +
   labs(
-    title = "Grouped Boxplots of Environmental Variables by Location",
+    title = "Variables by Location",
     x = "Location",
     y = "Value",
     fill = "Location"

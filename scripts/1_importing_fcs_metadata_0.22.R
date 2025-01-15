@@ -18,7 +18,7 @@
 
 #Define the project title
 
-project_title<- "PE_Cruises"
+project_title<- "PE_Cruises_test"
 
 
 # Define the working directory `work_dir`.\

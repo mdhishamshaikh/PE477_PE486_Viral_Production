@@ -31,4 +31,7 @@ VP_discussions/*
 *.pptx
 PE_Cruises/*
 PE_Cruises2/*
+PE_Cruises_test/
+PE_Cruises_FCS/*
+PE_Cruises_0.22/*
 PE_Cruises_viral_production_OUTLIERS/*

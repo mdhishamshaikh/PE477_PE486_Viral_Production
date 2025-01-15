@@ -17,7 +17,7 @@ read_and_label <- function(file) {
 }
 
 
-# Changing file names and keeping nly the staions needed.
+# Changing file names and keeping only the stations needed.
 combined_df <- bind_rows(lapply(file_list, read_and_label))
 combined_df$file_name <- sub("\\.csv$", "", combined_df$file_name)
 combined_df <- combined_df[combined_df$file_name %in% c("PE486_S02C01", "PE486_S04C02", "PE486_S06C01", "PE486_S08C01", 
@@ -49,7 +49,7 @@ combined_df <- combined_df %>%
   separate(Location_Station_Number, into = c("Location", "Station_Number"), sep = "_", remove = F)
 
 unique(combined_df$Location_Station_Number)
-# removing station PE477_7 and PE486_8 as tehy don't have viral production data attached to them.
+# removing station PE477_7 and PE486_8 as they do not have viral production data attached to them.
 
 combined_df <- combined_df %>%
   dplyr::filter(!Location_Station_Number %in% c("PE477_7", "PE486_8")) 
@@ -82,7 +82,7 @@ ctd_profiles<- combined_df %>%
   separate(Location_Station_Number, c("Location", "Station_Number"), "_", remove = F)
 
 write.csv(ctd_profiles, "./results/ctd_profiles/ctd_profiles.csv", row.names = F)
-
+ctd_profiles <- read.csv("./results/ctd_profiles/ctd_profiles.csv")
 
 ctd_long_df <- ctd_profiles %>%
   dplyr::select(-Location, -Station_Number) %>%
@@ -154,6 +154,38 @@ for (station in unique(ctd_long_df$Location_Station_Number)) {
 
 
 # Use this to figure ut if clines exist per station and start and end, maybe an avergae too.
+
+# Temperature Salinity plots per station ####
+
+custom_palette <- c(
+  "PE477_1" = "#1f77b4", "PE477_2" = "#ff7f0e", "PE477_3" = "#2ca02c",
+  "PE477_4" = "#d62728", "PE477_5" = "#9467bd", "PE477_6" = "#8c564b",
+  "PE486_1" = "#e377c2", "PE486_2" = "#7f7f7f", "PE486_3" = "#bcbd22",
+  "PE486_4" = "#17becf", "PE486_5" = "#aec7e8", "PE486_6" = "#ffbb78",
+  "PE477_7" = "#98df8a", "PE486_7" = "#ff9896",
+  "PE477" = lighten("#0c1844", 0.4), "PE486" = lighten("#850000", 0.4)
+)
+custom_shape_palette <- c(
+  "PE477_1" = 16, "PE477_2" = 17, "PE477_3" = 15,
+  "PE477_4" = 3, "PE477_5" = 4, "PE477_6" = 8,
+  "PE486_1" = 7, "PE486_2" = 1, "PE486_3" = 2,
+  "PE486_4" = 5, "PE486_5" = 6, "PE486_6" = 9,
+  "PE477_7" = 10, "PE486_7" = 13,
+  "PE477" = 11, "PE486" = 12
+)
+
+ggplot(ctd_profiles, aes(x = Salinity, y = Temperature, color = Location_Station_Number, shape = Location_Station_Number)) +
+  geom_point(size = 1) +
+ facet_wrap(~ Location, scales = "free", nrow = 2) +  # Facet by parameter (variable)
+  labs(title = paste("Temperature-Salinity plot"),
+       x = "Salinity (psu)",
+       y = "Temperature (C)") +
+ # scale_y_reverse() +  # Reverse the y-axis for depth profiles
+  scale_color_manual(values = custom_palette) +
+  scale_shape_manual(values = custom_shape_palette) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), # Rotate x-axis labels
+        strip.text = element_text(size = 8))  
 
 # 5.0 Extracing CTTD variables for 7, 15 and 30 m ####
 
