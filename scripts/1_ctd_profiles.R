@@ -52,8 +52,8 @@ unique(combined_df$Location_Station_Number)
 
 # Removing station PE477_7 and PE486_8 as they do not have viral production data attached to them. 
 # Will need these stations for 'omics work though.
-combined_df <- combined_df %>%
-  dplyr::filter(!Location_Station_Number %in% c("PE477_7", "PE486_8")) 
+# combined_df <- combined_df %>%
+#   dplyr::filter(!Location_Station_Number %in% c("PE477_7", "PE486_8")) 
 
 
 # 2.0 Selecting variables and simplifying names ####
@@ -187,6 +187,9 @@ closest_depths_df <- ctd_profiles %>%
 # After examining the distance between target depth and measured depth, it is evident that both PE477_5 and PE486_3 are not 30 m deep. 
 # Also in cases there are more than one values for the same measured_depths, I will take the first one
 closest_depths_df <- closest_depths_df %>%
-  dplyr::filter(Distance < 2)
+  dplyr::filter(Distance < 2) %>%
+  group_by(Location_Station_Number, Target_Depth) %>%
+  slice_head(n = 1) %>%  # Select the first row in each group
+  ungroup()
 
 write.csv(closest_depths_df, "./results/ctd_profiles/ctd_variables_sampling_depths.csv", row.names = F)

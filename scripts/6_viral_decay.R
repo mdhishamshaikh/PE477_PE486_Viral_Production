@@ -11,6 +11,7 @@ str(counts_per_mL)
 counts_0.22<- counts_per_mL %>%
   dplyr::filter(Sample_Type == '0.22',
                 Staining_Protocol == 'Viruses') %>%
+  mutate(Depth = ifelse(Depth == 1, 7, Depth)) %>%
   select(Location, Station_Number, Depth, Sample_Type, Timepoint, Replicate, c_Viruses, c_V1, c_V2, c_V3) %>%
   pivot_longer(cols = c(c_Viruses, c_V1, c_V2, c_V3),
                names_to = "Population",
