@@ -22,7 +22,13 @@ cyano <- phyto %>%
 
 microbial_abundance_nutrients <- bv_nuts %>%
   dplyr::left_join(cyano, by = c("Location", "Station_Number", "Depth")) %>%
-  dplyr::select(-c("Temperature", "Salinity", "TON", ends_with("Sample_Name")))
+  dplyr::select(-c("Temperature", "Salinity", "TON", ends_with("Sample_Name"))) %>%
+  mutate(
+    Nitrate = ifelse(Nitrate < 0, 0, Nitrate),
+    Phosphate = ifelse(Phosphate < 0, 0, Phosphate),
+    Silicate = ifelse(Silicate < 0, 0, Silicate),
+    Nitrite = ifelse(Nitrite < 0, 0, Nitrite)
+  )
 
 # Saving
 dir.create("./results/microbial_abundance_nutrients/", recursive = T)

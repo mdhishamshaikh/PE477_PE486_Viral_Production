@@ -9,7 +9,7 @@ vpc <- counts_per_mL %>%
                 Staining_Protocol == "Viruses") %>%
   dplyr::select(c(Location, Station_Number, Timepoint, Replicate, c_Bacteria, c_Viruses)) %>%
   group_by(Location, Station_Number, Timepoint, Replicate) %>%
-  slice_head(n = 1) %>%  # Retain the first row of each group
+  slice_head(n = 1) %>%  # Retain the first row of each group 
   ungroup()
 
 

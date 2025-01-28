@@ -108,9 +108,13 @@ metadata_processing<- function(file_path, extension = ".xlsx", sheet =NULL, proj
                           'Location', 'Expt_Date', 'Station_Number', 'Depth', 
                           'Sample_Type', 'Timepoint', 'Replicate', 'Acquisition_Duration',
                           'Dilution', 'Flowrate')] %>%
-    mutate(Sample_Index = row_number(),
+    mutate(
            Expt_Date = as.Date(as.character(Expt_Date), format)) %>% #converting Expt_Date and Date_Measurement into Date format
     mutate(Date_Measurement= as.Date(as.character(Date_Measurement), format))
+  #Sorting metadata inorder of measurement
+  metadata<- metadata[order(as.numeric(gsub("[^0-9]", "", metadata$Sample_Name))), ] 
+  metadata <- metadata %>%
+    dplyr::mutate(Sample_Index = row_number())
   .GlobalEnv$metadata<- metadata
   
   write.csv(metadata, file = paste0(work_dir, "/data/metadata/",project_title,"_metadata.csv"), row.names=F)
@@ -149,7 +153,7 @@ import_fcs<- function(fcs_dir, project_title, ...){
 
 
 
-populate_gate_df <- function(sample_range = c(1: length(metadata$Sample_Index)),
+populate_gate_df <- function(sample_range = c(metadata$Sample_Index), # provide sample indices here
                              g2_b_ssc = b_ssc, g2_b_fl1 = b_fl1, 
                              g2_v_ssc = v_ssc, g2_v_fl1 = v_fl1, 
                              g2_hna_ssc = hna_ssc, g2_hna_fl1 = hna_fl1, 
@@ -265,8 +269,10 @@ populate_gate_df <- function(sample_range = c(1: length(metadata$Sample_Index)),
   return(gate_df)
 }
 
-gates<- function(gate_index, gate_df2 = gate_df, ... #index
+gates<- function(sample_index, gate_df2 = gate_df, ... #sample index is i
 ){
+  
+  gate_index <- which(gate_df2$Sample_Index == sample_index) # the row from which to extract gating info using sample_index
   polycut<- matrix(c(gate_df2$g_b_ssc[gate_index][[1]][[1]], gate_df2$g_b_fl1[gate_index][[1]][[1]]), 
                    nrow = length(gate_df2$g_b_ssc[gate_index][[1]][[1]]), 
                    ncol=2)
@@ -384,9 +390,9 @@ read_transform_fs_bv <- function(x, ...){ #function to read and transform fcs fi
   
 }
 
-gatingset_bv_stats<- function(gate_index, flowset, ...){ #flowset here is already transformed, cleaned, and compensated
+gatingset_bv_stats<- function(sample_index, flowset, ...){ #flowset here is already transformed, cleaned, and compensated
   
-  gates(gate_index)
+  gates(sample_index)
   
   gsbv_fs<- flowWorkspace::GatingSet(flowset)
   gs_pop_add(gsbv_fs, bgate, parent="root")
@@ -442,23 +448,24 @@ get_bv_stats<- function(df = metadata, gate = "same", write_csv = T, test = F, .
   
   
   
-  for( i in 1:length(df$Sample_Index)){
+  for( i in df$Sample_Index){
     .GlobalEnv$i<- i
     .GlobalEnv$fcs_file<- df[df$Sample_Index == i,]$Sample_Name
     
     bacterial_gate(fcs_file = fcs_file)
     
-    print(i)
-    print(df[df$Sample_Index == i,]$Sample_Name)
+    print(paste0("Sample Index: ",i))
+    print(paste0("Sample Name: ", df[df$Sample_Index == i,]$Sample_Name))
+    
     
     .GlobalEnv$fcs_data<- paste0(paste0(work_dir,"/data/raw_data/", fcs_file))
     
-    gates(gate_index = i)
+    gates(sample_index = i)
     
     
     
     try(read_transform_fs_bv(fcs_data)  %>%
-          gatingset_bv_stats(gate_index = i))
+          gatingset_bv_stats(sample_index = i))
     t<- t +1
     print(paste0(t,"/",length(df$Sample_Name)))
     
@@ -485,9 +492,9 @@ get_bv_stats<- function(df = metadata, gate = "same", write_csv = T, test = F, .
   
 }
 
-gatingset_bv_plots<- function(gate_index, flowset, bins = 600, ...){ #flowset here is already transformed, cleaned, and compensated
+gatingset_bv_plots<- function(sample_index, flowset, bins = 600, ...){ #flowset here is already transformed, cleaned, and compensated
   
-  gates(gate_index)
+  gates(sample_index)
   
   gsbv_fs<- flowWorkspace::GatingSet(flowset)
   gs_pop_add(gsbv_fs, bgate, parent="root")
@@ -501,7 +508,7 @@ gatingset_bv_plots<- function(gate_index, flowset, bins = 600, ...){ #flowset he
   p<- ggcyto::ggcyto(gsbv_fs[[2]], aes(x = `SSC-H`, y = `FL1-H`), subset = "root") +
     geom_hex(bins = bins, ... ) +  
     theme_bw()+
-    labs(title= paste0(gate_index, "   ", metadata[metadata$Sample_Index== gate_index, ]$Sample_Name,  ...), x = "Side scatter (a.u.)", y = "Green Fluorescence (a.u.)")+
+    labs(title= paste0("Sample Index:", sample_index, "   ", metadata[metadata$Sample_Index== sample_index, ]$Sample_Name,  ...), x = "Side scatter (a.u.)", y = "Green Fluorescence (a.u.)")+
     theme(axis.text = element_text(size = 12),
           axis.title = element_text(size = 12),
           strip.background = element_rect(colour="white", fill="white"),
@@ -550,14 +557,14 @@ get_bv_plots<- function(df = metadata, gate = "same", write_pdf = T, test = F, .
   t<-0 #counter to 0
   p<- list() #creating an empty list
   
-  for( i in 1:length(df$Sample_Index)){
+  for( i in df$Sample_Index){
     .GlobalEnv$i<- i
     .GlobalEnv$fcs_file<- df[df$Sample_Index == i,]$Sample_Name
     
     bacterial_gate(fcs_file = fcs_file)
     
-    print(i)
-    print(df[df$Sample_Index == i,]$Sample_Name)
+    print(paste0("Sample Index: ",i))
+    print(paste0("Sample Name: ", df[df$Sample_Index == i,]$Sample_Name))
     
     .GlobalEnv$fcs_data<- paste0(paste0(work_dir,"/data/raw_data/", fcs_file))
     
@@ -565,7 +572,7 @@ get_bv_plots<- function(df = metadata, gate = "same", write_pdf = T, test = F, .
     
     p[[i]]<- list()
     p[[i]]<- try(read_transform_fs_bv(fcs_data)  %>%
-                   gatingset_bv_plots(gate_index = i))
+                   gatingset_bv_plots(sample_index = i))
     t<- t +1
     print(paste0(t,"/",length(df$Sample_Index)))
     
@@ -853,4 +860,59 @@ ggTS <- function(
   }
   
   return(p1)
+}
+
+
+
+###### Functions from viralprod package ########
+vp_average_replicate_dataframe <- function(data,
+                                           add_timepoints = TRUE){
+  dataframe_without_controls <- data[data$Sample_Type != '0.22',]
+  
+  AVG_dataframe <- dataframe_without_controls %>%
+    dplyr::select(dplyr::all_of(c('Location', 'Station_Number', 'Depth', 'Sample_Type', 'Timepoint', 'Replicate', !!!.GlobalEnv$populations_to_analyze))) %>%
+    tidyr::pivot_longer(cols = dplyr::starts_with('c_'), names_to = 'Population', values_to = 'Count') %>%
+    dplyr::group_by(.data$Location, .data$Station_Number, .data$Depth, .data$Sample_Type, .data$Timepoint, .data$Population) %>%
+    dplyr::summarise(#n = dplyr::n(), 
+      Mean = mean(.data$Count, na.rm = T), SE = plotrix::std.error(.data$Count, na.rm = T))
+  
+  AVG_dataframe_only_means <- AVG_dataframe %>%
+    dplyr::select(-'SE') %>%
+    tidyr::spread('Sample_Type', 'Mean')
+  
+  AVG_dataframe_only_se <- AVG_dataframe %>%
+    dplyr::select(-'Mean') %>%
+    tidyr::spread('Sample_Type', 'SE')
+  
+  if ('VPC' %in% AVG_dataframe$Sample_Type){
+    AVG_dataframe_only_means$Diff <- with(AVG_dataframe_only_means, VPC - VP)
+    AVG_dataframe_only_means <- tidyr::pivot_longer(AVG_dataframe_only_means, cols = dplyr::all_of(c('VP', 'VPC', 'Diff')), names_to = 'Sample_Type', values_to = 'Mean')
+    
+    AVG_dataframe_only_se$Diff <- with(AVG_dataframe_only_se, VPC + VP)
+    AVG_dataframe_only_se <- tidyr::pivot_longer(AVG_dataframe_only_se, cols = dplyr::all_of(c('VP', 'VPC', 'Diff')), names_to = 'Sample_Type', values_to = 'SE')
+  }
+  
+  AVG_dataframe_merged <- merge(AVG_dataframe_only_means, AVG_dataframe_only_se, 
+                                by = c('Location', 'Station_Number', 'Depth', 'Timepoint', 'Population', #'n', 
+                                       'Sample_Type')) %>%
+    dplyr::mutate(Microbe = dplyr::if_else(.data$Population %in% .GlobalEnv$populations_to_analyze[grep('c_V', .GlobalEnv$populations_to_analyze)], 'Viruses', 'Bacteria')) %>%
+    tidyr::unite(dplyr::all_of(c('Location', 'Station_Number', 'Depth')), col = 'tag', remove = F) %>%
+    dplyr::arrange('tag', 'Sample_Type','Replicate','Population', as.numeric(.data$Timepoint))
+  
+  if (add_timepoints == TRUE){
+    result_list <- list()
+    
+    for(combi_tag in unique(AVG_dataframe_merged$tag)){
+      AVG_dataframe_merged_2 <- AVG_dataframe_merged %>%
+        dplyr::filter(.data$tag == combi_tag)
+      
+      AVG_dataframe_merged_2 <- vp_add_timepoints(AVG_dataframe_merged_2)
+      result_list[[length(result_list)+1]] <- AVG_dataframe_merged_2
+    }
+    AVG_dataframe_with_timepoints <- data.table::rbindlist(result_list)
+  }else { 
+    AVG_dataframe_with_timepoints <- as.data.frame(AVG_dataframe_merged)
+  }
+  
+  return(AVG_dataframe_with_timepoints)
 }

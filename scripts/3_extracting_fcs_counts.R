@@ -18,7 +18,7 @@
 source("scripts/0_source.R")
 
 #Define the project title
-project_title<- "PE_Cruises_FCS"
+project_title<- "PE_Cruises_FCS_with_0.22"
 
 
 # Define the working directory `work_dir`.\
@@ -43,7 +43,7 @@ set_up_vp_count(project_title)
 # Please ensure that you have the following parameters mentioned in your metadata file.\
 # ADD THE PARAMETERS HERE\
 
-metadata_processing(paste0(proj_dir,"/metadata/PE_Cruises_VP_Metadata.xlsx"), extension = ".xlsx", project_title = "PE_Cruises")
+metadata_processing(paste0(proj_dir,"/metadata/PE_Cruises_VP_Metadata.xlsx"), sheet = "Selected_Metadata", extension = ".xlsx", project_title = "PE_Cruises")
 
 # #I will susbet metadata for testing rn
 # metadata<- metadata[1:10,]
@@ -68,13 +68,13 @@ import_fcs(fcs_origin)
 
 {
 metadata = metadata
-b_ssc = c(1.1, 2.0, 2.5, 3.2, 3.7, 3.7, 2.0, 0.6)
+b_ssc = c(1.1, 2.0, 2.5, 3.2, 3.9, 3.9, 2.0, 0.6)
 b_fl1 = c(1.9, 1.4, 1.4,1.8, 2.8, 3.7, 3.2, 2.75)
 v_ssc = c(-0.25, 1.2)
 v_fl1 = c(-0.1, 1.7)
-hna_ssc = c(0.6, 3.5)
+hna_ssc = c(0.6, 3.7)
 hna_fl1 = c(2.15, 3.5)
-lna_ssc = c(1.0, 3.5)
+lna_ssc = c(1.0, 3.7)
 lna_fl1 = c(1.4,2.15)  
 v1_ssc = c(-0.1, 0.90)
 v1_fl1 = c(-0.1, 0.8)
@@ -101,46 +101,46 @@ get_bv_plots()
 
 #As we see that gates don't fit all samples the same, we'll have to change the gating coordinates.
 #You can use populate_gate_df function to do so
-
-#1
-#Samples1 - 51 need no changes
-#let's visualize one of them now
-
-cytoplot(index = 46)
-
-#2
-#Samples 52 - 152 need to be lowered by 0.25
-
-cytoplot(index = 62, bins = 300)
-
-populate_gate_df(sample_range = c(52:152),
-                 VP_VPC_different = T,
-                 adj_y_all_by = -0.25 #from default
-)
-
-cytoplot(index = 62, bins = 100)
-
-
-#I'm finding sme issuses separating VP and VPC V1 and V2 here, but total viruses works fine
-
-
-#3
-#Samples 153 - 166 need no changes
-
-cytoplot(index = 160, bins = 200)
-
-#4
-#Samples 167 - 253 need to be lowered by 0.3
-
-cytoplot(index = 250, bins = 200)
-
-
-populate_gate_df(sample_range = c(167:253),
-                 adj_y_all_by = -0.3 #from default
-)
-
-cytoplot(index = 250, bins = 200, )
-
+# 
+# #1
+# #Samples1 - 51 need no changes
+# #let's visualize one of them now
+# 
+# cytoplot(index = 46)
+# 
+# #2
+# #Samples 52 - 152 need to be lowered by 0.25
+# 
+# cytoplot(index = 62, bins = 300)
+# 
+# populate_gate_df(sample_range = c(52:152),
+#                  VP_VPC_different = T,
+#                  adj_y_all_by = -0.25 #from default
+# )
+# 
+# cytoplot(index = 62, bins = 100)
+# 
+# 
+# #I'm finding sme issuses separating VP and VPC V1 and V2 here, but total viruses works fine
+# 
+# 
+# #3
+# #Samples 153 - 166 need no changes
+# 
+# cytoplot(index = 160, bins = 200)
+# 
+# #4
+# #Samples 167 - 253 need to be lowered by 0.3
+# 
+# cytoplot(index = 250, bins = 200)
+# 
+# 
+# populate_gate_df(sample_range = c(167:253),
+#                  adj_y_all_by = -0.3 #from default
+# )
+# 
+# cytoplot(index = 250, bins = 200, )
+# 
 
 
 ##### i will make these changes between V1 and V2 later. Fo rnow, total viruses are alright. 
