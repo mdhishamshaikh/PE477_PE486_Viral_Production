@@ -1,15 +1,19 @@
 #AIM: To check how viralprod VIPCAL and VIPCAL-SE compare with linear regression approach
-
+#LINEAR REGRESSIONN NEEDS TO BE RE-DONE ITH VIRAL LOSS CORRECTED FCM COUNTS#####
+#LINEAR REGRESSIONN NEEDS TO BE RE-DONE ITH VIRAL LOSS CORRECTED FCM COUNTS#####
+#LINEAR REGRESSIONN NEEDS TO BE RE-DONE ITH VIRAL LOSS CORRECTED FCM COUNTS#####
+#LINEAR REGRESSIONN NEEDS TO BE RE-DONE ITH VIRAL LOSS CORRECTED FCM COUNTS#####
+#LINEAR REGRESSIONN NEEDS TO BE RE-DONE ITH VIRAL LOSS CORRECTED FCM COUNTS#####
 # 0.0 Setting up ####
 source("scripts/0_source.R")
 
 
 # 1.0 Importing viral production rate data frames ####
 
-viralprod <- read.csv("results/viral_production_analyses/PE_Cruises_viral_production/vp_results_ALL.csv")
+viralprod <- read.csv("results/viral_production_analyses/PE_Cruises_0.22_corrected_viral_production/vp_results_BP.csv")
 
 #Linear regression output file is saved in metadata
-
+#LINEAR REGRESSIONN NEEDS TO BE RE-DONE ITH VIRAL LOSS CORRECTED FCM COUNTS#####
 lr <- readxl::read_excel("metadata/PE477_PE486_VP_LM_HMS.xlsx", sheet = 'final_output')
 
 # 2.0 Wrangling and combining the two data frames ####
@@ -89,14 +93,15 @@ write.csv(vp, "./results/viral_production_analyses/viralproduction_viralprod_lr.
 # 3.0 visualization ####
 #to see if there is a difference between lytic and lysogenic viral production between the methods
 
-vp_methods_plot <- ggplot(vp, aes(x = VP_Method, y = VP, fill = VP_Method)) +
+vp_methods_plot <- ggplot(vp, aes(x = VP_Method, y = VP/10^5, fill = VP_Method)) +
   geom_boxplot(outlier.shape = NA) + 
   geom_jitter(aes(color = Location), width = 0.2, alpha = 0.7) + 
   facet_grid(. ~Treatment )+
   labs(
     title = "Viral production across methods",
     x = "VP Method",
-    y = "Viral Production (VP)"
+    y =  expression("Viral production rate " ~ (x ~ 10^5 ~ "VLPs " ~ mL^-1  ~ h^-1)),
+    fill = "VP Method"
   ) +
   theme_test() +
   scale_fill_npg() +
@@ -107,14 +112,15 @@ ggsave(plot = vp_methods_plot, filename = "./figures/vp_methods.svg", width = 6,
 
 
 # Grouped bar plot
-vp_grouped_barplot <- ggplot(vp, aes(x = Location_Station, y = VP, fill = VP_Method)) +
+vp_grouped_barplot <- ggplot(vp, aes(x = Location_Station, y = VP/10^5, fill = VP_Method)) +
   geom_bar(stat = "identity", position = position_dodge(), width = 0.7#, color = "black"
            ) +
+  scale_y_continuous(expand = c(0, 0)) +
   facet_wrap(~ Treatment, scales = "free_y") +  # Facet by Treatment
   labs(
     title = "Viral Production by Station and Method",
     x = "Stations",
-    y =  expression("Viral production rate" ~ (x ~ 10^6 ~ "VLPs" ~ mL^-1 ~ h^-1)),
+    y =  expression("Viral production rate " ~ (x ~ 10^5 ~ "VLPs " ~ mL^-1  ~ h^-1)),
     fill = "VP Method"
   ) +
   theme_test(base_size = 12) +

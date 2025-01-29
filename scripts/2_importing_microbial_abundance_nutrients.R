@@ -9,14 +9,14 @@ bv_nuts <- readr::read_csv("https://raw.githubusercontent.com/mdhishamshaikh/Nor
 
 # 2.0 Importing phytoplankton abundance
 phyto <- readr::read_csv("https://raw.githubusercontent.com/mdhishamshaikh/NorthSea_Microbial_Abundance_Nutrients/main/phytoplankton_counts_pe477_pe486.csv")
-# phyto counts are not in per mL right now
+
 
 # extracting cyanobacterial gate 14
 
 cyano <- phyto %>%
   dplyr::filter(Gate == 14) %>%
-  dplyr::select(c("Total_Events", "Location", "Station_Number", "Depth")) %>%
-  dplyr::rename(Cyanobacteria = Total_Events)
+  dplyr::select(c("cells_per_mL", "Location", "Station_Number", "Depth")) %>%
+  dplyr::rename(Cyanobacteria = cells_per_mL)
 
 # 3.0 Combining the two data frames and saving it ####
 

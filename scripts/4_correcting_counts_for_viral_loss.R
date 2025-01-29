@@ -115,6 +115,7 @@ vdc_plot_0_24_high24_stations <- ggplot(counts_per_mL_0_24  %>%
   geom_point(aes(color = as.factor(Replicate)), size = 2) +  # Color points by Sample_Type
   facet_grid(Sample_Type ~ Location_Station) +  # Facet by Location_Station and Sample_Type
   scale_color_npg() +
+  ylim(c(0,13)) +
   theme_bw(base_size = 15) +
   labs(title = "Stations with high T24 - Loss corrected (T0 & T24) Viral Abundance (c_Viruses) over Timepoints",
        x = "Timepoint",
@@ -159,6 +160,7 @@ vdc_plot_0_12_high24_stations <- ggplot(counts_per_mL_0_12, aes(x = Timepoint, y
   geom_point(aes(color = as.factor(Replicate)), size = 2) +  # Color points by Sample_Type
   facet_grid(Sample_Type ~ Location_Station) +  # Facet by Location_Station and Sample_Type
   scale_color_npg() +
+  ylim(c(0,13)) +
   theme_bw(base_size = 15) +
   labs(title = "Stations with high T24 - Loss corrected (T0-T12) Viral Abundance (c_Viruses) over Timepoints",
        x = "Timepoint",

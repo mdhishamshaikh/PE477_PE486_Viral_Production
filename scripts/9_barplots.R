@@ -5,8 +5,7 @@ source("scripts/0_source.R")
 
 # 1.0 Importing combined PE data frame ####
 pe_df <- read.csv( "./results/PE477_PE486_3depths_combined.csv") %>%
-  mutate(Location_Station = paste(Location, Station_Number, sep = "_")) %>%
-  dplyr::filter(!Location_Station %in% c("PE477_7", "PE486_8")) # No VP assay was performed
+  mutate(Location_Station = paste(Location, Station_Number, sep = "_")) # No VP assay was performed
 
 station_variables <- c("Location", "Station_Number", "Depth", "sample_tag", "Location_Station")
 
@@ -34,12 +33,12 @@ plot_list <- split(pe_df_long_3_depths, pe_df_long_3_depths$Variable)
 
 # Create one plot per variable, with Depth as a facet
 plots <- lapply(names(plot_list), function(var) {
-  ggplot(plot_list[[var]], aes(x = Location_Station, y = Value, fill = 'black')) +
+  ggplot(plot_list[[var]], aes(x = factor(Station_Number), y = Value, fill = 'black')) +
     geom_bar(stat = "identity", position = position_dodge(), width = 0.7, fill = 'black') +
     labs(title = paste(var), x = "Station", y = "Value") +
-    facet_grid( Depth ~ Location, scales = "fixed") +  
-    scale_y_continuous(expand = expansion(mult = c(0, 0.0))) +
-    theme_test(base_size =12) +
+    facet_grid(Depth ~ Location, scales = "free_x", space = "free_x") + 
+    scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
+    theme_bw(base_size =12) +
     theme(strip.background = element_blank(),
           axis.text.x = element_text(angle = 45, hjust = 1),
           strip.placement = "outside")
@@ -74,10 +73,12 @@ variables_7m <- c("Salinity", "Temperature", "Density", "Conductivity", "Turbidi
                         "Total_Viruses", "V1", "V2", "V3",
                         "VBR",
                         "Nitrate", "Nitrite", "Phosphate", "Silicate",
-                  "VP_Lytic", "VP_Lysogenic", "decay_rate_exponential")
+                  "Corrected_VP_Lytic", "Corrected_VP_Lysogenic", "percent_decay_day_linear",
+                  "viral_turnover_time", "percent_bacterial_loss_day_burst_30", "percent_lysogeny_burst_30")
 
 
-pe_df_long_7m <- pe_df %>%
+pe_df_long_7m <- pe_df%>%
+  dplyr::filter(Depth == 7) %>%
   dplyr::select(all_of(c(station_variables, variables_7m))) %>%
   tidyr::pivot_longer(cols = -all_of(station_variables),
                       names_to = "Variable",
@@ -94,8 +95,8 @@ plots_7m <- lapply(names(plot_list_7m), function(var) {
   ggplot(plot_list_7m[[var]], aes(x = as.factor(Station_Number), y = Value, fill = 'black')) +
     geom_bar(stat = "identity", position = position_dodge(), width = 0.7, fill = 'black') +
     labs(title = paste(var), x = "Station", y = "Value") +
-    facet_grid( ~ Location, scales = "fixed") +  
-    scale_y_continuous(expand = expansion(mult = c(0, 0.0))) +
+    facet_grid(Depth ~ Location, scales = "free_x", space = "free_x") +
+    scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
     theme_test(base_size =8) +
     theme(strip.background = element_blank(),
           axis.text.x = element_text(angle = 45, hjust = 1),

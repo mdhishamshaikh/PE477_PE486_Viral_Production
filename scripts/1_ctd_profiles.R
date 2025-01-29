@@ -60,6 +60,7 @@ unique(combined_df$Location_Station_Number)
 
 combined_df <- combined_df %>%
   rename(
+    Original_station_cast = file_name,
     Depth = depSM,
     Salinity = sal00,
     Temperature = t090C,
@@ -79,7 +80,7 @@ combined_df <- combined_df %>%
   dplyr::filter(Depth > 3) # Making sure first 3 meters are not considered as the disturbance from dropping the CTD frame creates large fluctuations in measurements.
 
 ctd_profiles<- combined_df %>%
-  dplyr::select(c("Location_Station_Number", "Depth", "Salinity", "Temperature", "Pressure", "Density", "Conductivity", "Oxygen", "Turbidity", "Fluorescence")) %>%
+  dplyr::select(c("Original_station_cast", "Location_Station_Number", "Depth", "Salinity", "Temperature", "Pressure", "Density", "Conductivity", "Oxygen", "Turbidity", "Fluorescence")) %>%
   separate(Location_Station_Number, c("Location", "Station_Number"), "_", remove = F)
 
 # Writing output as a csv  
@@ -90,12 +91,13 @@ write.csv(ctd_profiles, "./results/ctd_profiles/ctd_profiles.csv", row.names = F
 ctd_profiles <- read.csv("./results/ctd_profiles/ctd_profiles.csv")
 
 ctd_long_df <- ctd_profiles %>%
-  dplyr::select(-Location, -Station_Number) %>%
-  reshape2::melt(id.vars = c("Location_Station_Number", "Depth")) %>%
+  dplyr::select(-Location, -Station_Number) %>%  
+  reshape2::melt(id.vars = c("Original_station_cast", "Location_Station_Number", "Depth")) %>%  
   mutate(variable = factor(variable, levels = c(
     "Salinity", "Temperature", "Pressure", "Density", 
     "Conductivity", "Oxygen", "Turbidity", "Fluorescence"
   )))
+
 
 unique(ctd_long_df$variable)
 
@@ -156,7 +158,7 @@ for (station in unique(ctd_long_df$Location_Station_Number)) {
 }
 
 
-# 5.0 Extracing CTTD variables for 7, 15 and 30 m ####
+# 5.0 Extracing CTD variables for 7, 15 and 30 m ####
 
 ctd_profiles <- read.csv("./results/ctd_profiles/ctd_profiles.csv")
 

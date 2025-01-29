@@ -400,3 +400,84 @@ ggplot(vp, aes(x = Location_Station, y = eff_corrected_VP)) +
     x = "Location and Station",
     y = "VP"
   )
+
+
+
+# Viraprod wihtout removing outliers ####
+
+counts_per_mL<- read.csv("results/viral_loss_corrected_counts/PE_Cruises_FCS_VIRAL_LOSS_CORRECTED_0_24_per_mL.csv")
+str(counts_per_mL)
+
+
+
+class(counts_per_mL) #failed
+counts_per_mL <- vp_class_count_data(counts_per_mL) #passed
+class(counts_per_mL)
+
+#Running viralprod
+
+vp_end_to_end(data = counts_per_mL ,
+              original_abundances = abundance,
+              methods = c(2,9,10),
+              write_output = T,
+              output_dir = 'results/viral_production_analyses/PE_Cruises_0.22_corrected_with_outliers_viral_production')
+
+vp_with_outliers <- read.csv("results/viral_production_analyses/PE_Cruises_0.22_corrected_with_outliers_viral_production/vp_results_BP.csv")
+
+vp_with_outliers <- vp_with_outliers %>%
+  dplyr::filter(VP_Method == "VPCL_AR_DIFF_SE",
+                Sample_Type != "VPC")
+
+vp_with_outliers$Location_Station <- paste(vp_with_outliers$Location, vp_with_outliers$Station_Number, sep = "_")
+
+
+ggplot(vp_with_outliers, aes(x = Location_Station, y = VP)) +
+  # geom_point() +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Sample_Type) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(
+    title = "VP vs Location_Station",
+    x = "Location and Station",
+    y = "VP"
+  )
+
+
+# Combined plot of outliers removed with ones not removed
+
+vp <- vp %>% mutate(Data_Source = "VP_without_outliers")
+vp_with_outliers <- vp_with_outliers %>% mutate(Data_Source = "VP_with_Outliers")
+
+# Combining both dataframes
+vp_combined <- bind_rows(vp, vp_with_outliers)
+
+# Creating the grouped bar plot
+ggplot(vp_combined, aes(x = Location_Station, y = VP, fill = Data_Source)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~Sample_Type) +
+  labs(title = "Comparison of VP with and without outliers",
+       x = "Location Station",
+       y = "VP",
+       fill = "Data Source") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+# Total bactera lysed ####
+
+#Assuming a burst size of 50
+
+ggplot(vp, aes(x = Location_Station, y = eff_corrected_VP/50)) +
+  # geom_point() +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ Sample_Type) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(
+    title = "bacterial loss rate (lytic/lysogeny) vs Location_Station",
+    x = "Location and Station",
+    y = "bacterial loss rate in original sample"
+  )
