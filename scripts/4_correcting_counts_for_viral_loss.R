@@ -128,8 +128,9 @@ vdc_plot_0_24_high24_stations
 
 high_24_stations_0_12_0.22_slopes<- counts_per_mL_outliers_removed %>%
   dplyr::filter(Sample_Type == "0.22",
-                Timepoint %in% c(0, 3, 6, 9, 12),
-                Location_Station %in% c("PE477_2", "PE477_4", "PE486_2", "PE486_4", "PE486_6", "PE486_7")) %>%
+                Timepoint %in% c(0, 3, 6, 9, 12)) %>%
+  # dplyr::filter(
+  #               Location_Station %in% c("PE477_2", "PE477_4", "PE486_2", "PE486_4", "PE486_6", "PE486_7")) %>%
   group_by(Location_Station) %>%
   summarise(Slope = coef(lm(c_Viruses ~ Timepoint))[2]) %>%
   expand_grid(Timepoint = c(3,6,9,12,24))
@@ -140,8 +141,8 @@ viral_count_correction_per_timepoint_0_12 <- time_elapsed %>%
 
 
 loss_corrected_viral_counts_0_12 <- counts_per_mL_outliers_removed %>%
-  dplyr::filter(Sample_Type != "0.22",
-                Location_Station %in% c("PE477_2", "PE477_4", "PE486_2", "PE486_4", "PE486_6", "PE486_7")) %>%
+  dplyr::filter(Sample_Type != "0.22") %>%
+  #dplyr::filter(Location_Station %in% c("PE477_2", "PE477_4", "PE486_2", "PE486_4", "PE486_6", "PE486_7")) %>%
   left_join(
     viral_count_correction_per_timepoint_0_12 %>%
       dplyr::mutate(viral_count_correction = if_else(Timepoint == 0, 0, viral_count_correction)),

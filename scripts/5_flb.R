@@ -22,8 +22,11 @@ flb_df_T24 <- flb_df %>% filter(Time == 24) %>% select(Day, Location, Sample_Typ
 flb_df_merged <- full_join(flb_df_T0, flb_df_T24, by = c("Day", "Location", "Replicate", "Sample_Type"), suffix = c("_T0", "_T24"))
 
 flb_df_merged <- flb_df_merged %>%
-  mutate(cells_per_mL_diff = cells_per_mL_T24 - cells_per_mL_T0,
-         sample_rep = paste0(Sample_Type, "_", Replicate))
+  mutate(
+    cells_per_mL_diff = cells_per_mL_T24 - cells_per_mL_T0,
+    sample_rep = paste0(Sample_Type, "_", Replicate),
+    exp_loss_rate = (log(cells_per_mL_T24) - log(cells_per_mL_T0)) / 24  # Assuming time step is 24 hours
+  )
 
 
 ggplot(flb_df_merged, aes(x = Sample_Type, y = cells_per_mL_diff, fill = sample_rep)) +
@@ -44,7 +47,8 @@ flb_stats <- flb_df_merged %>%
   group_by(Day) %>%
   dplyr::summarise(
     mean_diff = mean(cells_per_mL_diff, na.rm = TRUE),
-    se_diff = plotrix::std.error(cells_per_mL_diff, na.rm = TRUE)
+    se_diff = plotrix::std.error(cells_per_mL_diff, na.rm = TRUE),
+    exp_loss_rate_mean = mean(exp_loss_rate, na.rm = T) 
   ) %>%
   ungroup() %>%
   mutate(Sample_Type = "FLB")

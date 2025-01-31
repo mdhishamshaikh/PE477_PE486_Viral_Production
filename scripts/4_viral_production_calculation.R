@@ -25,6 +25,40 @@ vdc_plot <- ggplot(counts_per_mL, aes(x = Timepoint, y = c_Viruses/1e+6)) +
 vdc_plot
 ggsave(vdc_plot, filename = "./figures/loss_corrected_vdc_plot.svg", width = 20, height = 5)
 
+# SAVING PLOTS PER STATION ####
+{
+  # Ensure the output folder exists
+  output_folder <- "./figures/station_vdc_BEFORE_OUTLIERS_REMOVED_plots"
+  if (!dir.exists(output_folder)) {
+    dir.create(output_folder, recursive = TRUE)
+  }
+  
+  # Loop through each unique Location_Station
+  unique_stations <- unique(counts_per_mL$Location_Station)
+  
+  for (station in unique_stations) {
+    # Filter data for the current station
+    station_data <- counts_per_mL %>% dplyr::filter(Location_Station == station)
+    
+    # Create the plot
+    vdc_plot <- ggplot(station_data, aes(x = Timepoint, y = c_Viruses / 1e+6)) +
+      geom_line(aes(group = as.factor(Replicate))) +  # Add lines to connect points for each replicate
+      geom_point(aes(color = as.factor(Replicate)), size = 2) +  # Color points by Replicate
+      facet_grid(. ~ Sample_Type, scales = "free_y") +  # Facet Sample_Type on left and right
+      scale_color_npg() +
+      theme_bw() +
+      labs(title = paste("Loss corrected Viral Abundance (c_Viruses) - Station", station),
+           x = "Timepoint",
+           y = "Viral Count (c_Viruses) (millions)",
+           color = "Replicate")
+    
+    # Save the plot
+    filename <- paste0(output_folder, "/loss_corrected_vdc_plot_", station, ".svg")
+    ggsave(vdc_plot, filename = filename, width = 12, height = 5)
+  }
+}
+
+
 # Function to make an exclusion dataframe
 add_to_exclusion <- function(existing_df = NULL, location, station, sample_type, timepoint, replicate) {
   
@@ -72,7 +106,7 @@ add_to_exclusion <- function(existing_df = NULL, location, station, sample_type,
 #              Replicate == 3))
 
 # I have created an exclusion datframe already, and would directly use it to exclude outliers
-exclusion_df <- read.csv("./results/viral_production_analyses/excluded_samples.csv")
+exclusion_df <- read.csv("./results/viral_production_analyses/excluded_samples_CB.csv")
 
 for (i in 1:nrow(exclusion_df)) {
   counts_per_mL <- counts_per_mL %>%
@@ -88,6 +122,8 @@ for (i in 1:nrow(exclusion_df)) {
 filtered_data <- counts_per_mL %>%
   dplyr::filter(Sample_Type %in% c("VP", "VPC"))  %>%
   mutate(Location_Station = paste(Location, Station_Number, sep = "_"))
+
+write.csv(filtered_data, "results/viral_loss_corrected_counts/FILTERED_PE_Cruises_FCS_VIRAL_LOSS_CORRECTED_0_24_per_mL.csv", row.names = F)
 
 # Plotting
 vdc_filtered_plot <- ggplot(filtered_data, aes(x = Timepoint, y = c_Viruses/1e+6)) +
@@ -118,6 +154,19 @@ vdc_filtered_lm_plot <- ggplot(filtered_data, aes(x = Timepoint, y = c_Viruses /
 vdc_filtered_lm_plot
 ggsave(vdc_filtered_lm_plot, filename = "./figures/loss_corrected_vdc_filtered_lm_plot.svg", width = 20, height = 5)
 
+# ggplot(filtered_data, aes(x = Timepoint, y = c_Viruses / 1e+6)) +
+#   #geom_line(aes(group = as.factor(Replicate))) +  # Add lines to connect points for each sample
+#   geom_point(aes(color = as.factor(Replicate)), size = 2) +  # Color points by Replicate
+#   geom_smooth(aes(group = as.factor(Replicate), color = as.factor(Replicate)), 
+#               method = "lm", se = FALSE, linetype = "dashed") +  # Add regression lines per replicate
+#   facet_grid(Sample_Type ~ Location_Station) +  # Facet by Location_Station and Sample_Type
+#   scale_color_npg() +
+#   theme_bw(base_size = 15) +
+#   labs(#title = "Viral Abundance (c_Viruses) over Timepoints",
+#     x = "Timepoint",
+#     y = "Viral Count (c_Viruses)",
+#     color = "Replicate")
+
 
 # 3.0 Plotting averaged counts for VP and Diff treatments ####
 # using internal viralprod functions available in 0_source.R 
@@ -129,16 +178,16 @@ filtered_viruses <- vp_average_replicate_dataframe(filtered_data, add_timepoints
 # Creating VP treatment plots
 vp_plot <- ggplot(filtered_viruses %>%
          dplyr::filter(Sample_Type == "VP"), 
-       aes(x = Timepoint, y = Mean, color = Sample_Type)) +
+       aes(x = Timepoint, y = Mean/1e+6, color = Sample_Type)) +
   geom_line(size = 1, color = "#d43028") +  # Line for mean
   geom_point(size = 2, color = "#d43028") +  # Points for mean
-  geom_errorbar(aes(ymin = Mean - SE, ymax = Mean + SE), width = 0.2, color = "#d43028") +  # Error bars
+  geom_errorbar(aes(ymin = (Mean - SE)/1e+6, ymax = (Mean + SE)/1e+6), width = 0.2, color = "#d43028") +  # Error bars
   facet_wrap(~tag, scales = "free") +  # Facet by tag
   theme_minimal() +
   labs(
     title = "VP treatment for lytic viral production - Mean and SE of loss corrected (T0/T24) viral counts",
     x = "Timepoint",
-    y = "Mean",
+    y = "Mean viral count (VLPs in millions per mL)",
     color = "Sample Type"
   ) +
   theme(
@@ -155,16 +204,16 @@ ggsave(vp_plot, filename = "./figures/VP_treament_loss_corrected_VDC_filtered_pl
 # Creating VP treatment plots
 diff_plot <- ggplot(filtered_viruses %>%
          dplyr::filter(Sample_Type == "Diff"), 
-       aes(x = Timepoint, y = Mean, color = Sample_Type)) +
+       aes(x = Timepoint, y = Mean/1e+6, color = Sample_Type)) +
   geom_line(size = 1, color = "#4d778b") +  # Line for mean
   geom_point(size = 2, color = "#4d778b") +  # Points for mean
-  geom_errorbar(aes(ymin = Mean - SE, ymax = Mean + SE), width = 0.2, color = "#4d778b") +  # Error bars
+  geom_errorbar(aes(ymin = (Mean - SE)/1e+6, ymax = (Mean + SE)/1e+6), width = 0.2, color = "#4d778b") +  # Error bars
   facet_wrap(~tag, scales = "free") +  # Facet by tag
   theme_minimal() +
   labs(
     title = "VPC-VP treatment for lysogenic viral production - Mean and SE of loss corrected (T0/T24) viral counts",
     x = "Timepoint",
-    y = "Mean",
+    y = "Mean viral count difference (in millions per mL)",
     color = "Sample Type"
   ) +
   theme(
@@ -208,9 +257,9 @@ vp_end_to_end(data = filtered_data ,
               original_abundances = abundance,
               methods = c(2,9,10),
               write_output = T,
-              output_dir = 'results/viral_production_analyses/PE_Cruises_0.22_corrected_viral_production')
+              output_dir = 'results/viral_production_analyses/PE_Cruises_0.22_corrected_viral_production_CB_outliers')
 
-vp <- read.csv("results/viral_production_analyses/PE_Cruises_0.22_corrected_viral_production/vp_results_BP.csv")
+vp <- read.csv("results/viral_production_analyses/PE_Cruises_0.22_corrected_viral_production_CB_outliers/vp_results_BP.csv")
 
 vp <- vp %>%
   dplyr::filter(VP_Method == "VPCL_AR_DIFF_SE",
@@ -228,7 +277,7 @@ ggplot(vp, aes(x = Location_Station, y = VP)) +
   labs(
     title = "VP vs Location_Station",
     x = "Location and Station",
-    y = "VP"
+    y = "Viral production rate (VLPs per mL per hour)"
   )
 
 # 4.1 Runnning viralprod on T0_T12 corrected couns #####
@@ -317,6 +366,19 @@ ggplot(vp_0_12, aes(x = Location_Station, y = VP)) +
   )
 
 
+# hAVE to correct it for bacterail eficiency t sho it coria ####
+vp_0_12_wide <- vp_0_12 %>%
+  select(c(Location_Station, Sample_Type, VP)) %>%
+  pivot_wider(names_from = Sample_Type,
+              values_from = VP) 
+bac_eff <- vp %>%
+  select(c(Location, Station_Number, bac_efficiency))%>%
+  mutate(Location_Station = paste(Location, Station_Number, sep = "_"))
+
+vp_0_12_wide <- vp_0_12_wide %>%
+  left_join(bac_eff, by = "Location_Station") %>%
+  mutate(corr_VP = VP*100/bac_efficiency,
+         corr_Diff = Diff*100/bac_efficiency)
 
 ### combining vp  and vp_0_12
 
@@ -350,8 +412,8 @@ diff_data_loss <- combined_data %>% dplyr::filter(Sample_Type == "Diff")
 kruskal.test(VP ~ Group, data = diff_data_loss)
 
 
-# Coapring lytic viral production andlysogenic viralproduction betwen T0_T12 an T0_T24
-vp_all<- read.csv("results/viral_production_analyses/PE_Cruises_0.22_corrected_viral_production/vp_results_ALL.csv") %>%
+# Coapring lytic viral production andlysogenic viralproduction betwen T0_T12 an T0_T24 #######
+vp_all<- read.csv("results/viral_production_analyses/PE_Cruises_0.22_corrected_viral_production_CB_outliers/vp_results_ALL.csv") %>%
   dplyr::filter(VP_Method == "VPCL_AR_DIFF_SE", 
                 Sample_Type != "VPC",
                 Time_Range %in% c("T0_T12", "T0_T24"))
@@ -366,9 +428,55 @@ ggplot(vp_all, aes(x = Location_Station, y = VP, fill = Time_Range)) +
     strip.text = element_text(size = 12, face = "bold")  # Style facet labels
   ) +
   labs(
-    title = "VP vs Location_Station (Grouped by Time Range)",
+    title = "VP vs Location_Station (T12 vs T24)",
     x = "Location and Station",
     y = "VP",
+    fill = "Time Range"
+  )
+
+
+vp_all_wide <- vp_all %>%
+  select(c(Location_Station, Sample_Type, Time_Range, VP)) %>%
+  pivot_wider(names_from = Sample_Type,
+              values_from = VP) 
+bac_eff <- readxl::read_excel("metadata/PE477_PE486_VP_LM_HMS.xlsx", sheet = 'final_output') %>%
+  select(c(Location, Station_Number, bac_efficiency))%>%
+  mutate(Location_Station = paste(Location, Station_Number, sep = "_"))
+
+vp_all_wide <- vp_all_wide %>%
+  left_join(bac_eff, by = "Location_Station") %>%
+  mutate(corr_Lytic = VP*100/bac_efficiency,
+         corr_Lysogenic = Diff*100/bac_efficiency)
+
+ggplot(vp_all_wide, aes(x = Location_Station, y = corr_Lytic, fill = Time_Range)) +
+  geom_bar(stat = "identity", position = "dodge") +  # Grouped bar plot
+ # facet_wrap(~ Sample_Type) +  # Facet by Sample_Type
+  theme_test() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1),  # Rotate x-axis text
+    strip.text = element_text(size = 12, face = "bold")  # Style facet labels
+  ) +
+  scale_fill_futurama()+
+  labs(
+    title = "Lytic viral production rate (T12 vs T24)",
+    x = "Location and Station",
+    y = "Viral production (VLPs per mL per hour)",
+    fill = "Time Range"
+  )
+
+ggplot(vp_all_wide, aes(x = Location_Station, y = corr_Lysogenic, fill = Time_Range)) +
+  geom_bar(stat = "identity", position = "dodge") +  # Grouped bar plot
+  # facet_wrap(~ Sample_Type) +  # Facet by Sample_Type
+  theme_test() +
+  theme(
+    axis.text.x = element_text(angle = 90, hjust = 1),  # Rotate x-axis text
+    strip.text = element_text(size = 12, face = "bold")  # Style facet labels
+  ) +
+  scale_fill_futurama()+
+  labs(
+    title = "Lysogenic viral production rate (T12 vs T24)",
+    x = "Location and Station",
+    y = "Viral production (VLPs per mL per hour)",
     fill = "Time Range"
   )
 

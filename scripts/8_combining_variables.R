@@ -92,7 +92,13 @@ pe_df <- pe_df %>%
 
 # 7.0 Calculating bacterial loss and percent lysogeny, and viral turnover rate ####
 pe_df <- pe_df %>%
-  dplyr::mutate(viral_turnover_time = Total_Viruses/Corrected_VP_Lytic)
+  dplyr::mutate(viral_turnover_time = Total_Viruses/Corrected_VP_Lytic,
+                Season = dplyr::case_when(
+                  Location == "PE477" ~ "Autumn (Sept 2020)",
+                  Location == "PE486" ~ "Spring (Apr 2021)",
+                  TRUE ~ as.character(Location)  # Keeps other values unchanged
+                )
+  )
 
 
 
@@ -119,7 +125,7 @@ pe_df_7m <- pe_df %>%
   dplyr::filter(Depth == 7)
 
 write.csv(pe_df_7m, "./results/PE477_PE486_3depths_combined_7m.csv", row.names = F)
-
+pe_df_7m <- read.csv("./results/PE477_PE486_3depths_combined_7m.csv")
 
 ggplot(pe_df %>% dplyr::filter(Depth == 7), aes(x = factor(Station_Number), y = Corrected_VP_Lytic , fill = 'black')) +
   geom_bar(stat = "identity", position = position_dodge(), width = 0.7, fill = 'black') +

@@ -10,7 +10,7 @@ source("scripts/0_source.R")
 
 # 1.0 Importing viral production rate data frames ####
 
-viralprod <- read.csv("results/viral_production_analyses/PE_Cruises_0.22_corrected_viral_production/vp_results_BP.csv")
+viralprod <- read.csv("results/viral_production_analyses/PE_Cruises_0.22_corrected_viral_production_CB_outliers/vp_results_BP.csv")
 
 #Linear regression output file is saved in metadata
 #LINEAR REGRESSIONN NEEDS TO BE RE-DONE ITH VIRAL LOSS CORRECTED FCM COUNTS#####
@@ -79,7 +79,7 @@ vp <- rbind(viralprod_transformed, lr_transformed)
 # Adding viral production assay bacterial efficiency information 
 vp <- vp %>%
   left_join(
-    lm %>% select(Location, Station_Number, Depth, bac_efficiency), 
+    lr %>% select(Location, Station_Number, Depth, bac_efficiency), 
     by = c("Location", "Station_Number", "Depth")
   ) %>%
   mutate(
