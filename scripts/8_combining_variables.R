@@ -10,6 +10,7 @@ source("scripts/0_source.R")
 ctd <- read.csv("./results/ctd_profiles/ctd_variables_sampling_depths.csv") %>%
   dplyr::select(-c(Measured_depth, Distance, Location_Station_Number)) %>%
   dplyr::rename(Depth = Target_Depth) %>%
+  dplyr::mutate(Depth = as.character(Depth)) %>%
   dplyr::filter(!(Location == "PE477" & Station_Number == 7) & 
            !(Location == "PE486" & Station_Number == 8))
 
@@ -17,6 +18,7 @@ ctd <- read.csv("./results/ctd_profiles/ctd_variables_sampling_depths.csv") %>%
 # 2.0 Microbial abundances and nutrients ####
 
 abundance_nuts <- read.csv("./results/microbial_abundance_nutrients/microbial_abundance_nutrients.csv") %>%
+  dplyr::mutate(Depth = as.character(Depth)) %>%
   dplyr::filter(!(Location == "PE477" & Station_Number == 7) & 
                   !(Location == "PE486" & Station_Number == 8)) %>%
   distinct() # There were some duplicated rows
@@ -24,14 +26,23 @@ abundance_nuts <- read.csv("./results/microbial_abundance_nutrients/microbial_ab
 # Missing 15 m and 30 m from PE477_1 and PE477_2 as samples were not taken for them.
 
 
-# 3.0 Viral production ####
+# 3.0 Viral decay ####
+
+decay <- read.csv("./results/viral_decay.csv") %>%
+  dplyr::filter(Population == "c_Viruses") %>%
+  dplyr::mutate(Depth = as.character(Depth)) %>%
+  dplyr::select(-c(ends_with("exponential"), Sample_Type, Population, T0, T24))
+
+
+# 4.0 Viral production ####
 
 vp <- read.csv("./results/viral_production_analyses/viralproduction_viralprod_lr.csv") %>%
   dplyr::filter(VP_Method == "VIPCAL-SE") %>% # only retaining VIPCAL-SE
+  dplyr::mutate(Depth = as.character(Depth)) %>%
   tidyr::pivot_wider(names_from = Treatment,
                      values_from = c(VP, abs_VP, VP_SE),
                      names_prefix = "") %>%
-  dplyr::select(-c(Time_Range, Population, Location_Station, VP_Method)) 
+  dplyr::select(-c(Time_Range, Population, Location_Station, VP_Method, contains("abs_"))) 
 #As Time_Range is T0_T24 for all, population we focus on is c_Viruses, and VIPCAL-SE is the only method
 # VP_Lytic and VP_Lysogenic still needs to be corrected for bacterial loss when processing
 #VP_Lytic and VP_Lysogenic already corrected for viral loss due adsorption on the wall
@@ -39,13 +50,9 @@ vp <- read.csv("./results/viral_production_analyses/viralproduction_viralprod_lr
 vp_corrected_for_bacterial_loss <- vp %>%
   left_join(decay, by = c("Location", "Station_Number", "Depth")) %>%
   mutate(Corrected_VP_Lytic = (VP_Lytic)*100/bac_efficiency, 
-         Corrected_VP_Lysogenic = (VP_Lysogenic)*100/bac_efficiency) 
-
-# 4.0 Viral decay ####
-
-decay <- read.csv("./results/viral_decay.csv") %>%
-  dplyr::filter(Population == "c_Viruses") %>%
-  dplyr::select(-c(ends_with("exponential"), Sample_Type, Population, T0, T24))
+         Corrected_VP_Lysogenic = (VP_Lysogenic)*100/bac_efficiency,
+         Corrected_VP_SE_Lytic = (VP_SE_Lytic)*100/bac_efficiency, 
+         Corrected_VP_SE_Lysogenic = (VP_SE_Lysogenic)*100/bac_efficiency) 
 
 
 
@@ -53,7 +60,8 @@ decay <- read.csv("./results/viral_decay.csv") %>%
 
 pe_df <-  ctd %>%
   left_join(abundance_nuts, by = c("Location", "Station_Number", "Depth")) %>%
-  left_join(vp_corrected_for_bacterial_loss, by = c("Location", "Station_Number", "Depth")) 
+  left_join(vp_corrected_for_bacterial_loss, by = c("Location", "Station_Number", "Depth")) %>%
+  dplyr::mutate(Location_Station = paste(Location, Station_Number, sep = "_"))
 
 
 

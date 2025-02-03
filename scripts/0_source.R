@@ -49,7 +49,13 @@ packages_to_load <- c(
   "pracma",
   "tidyplots",
   "ggpubr",
-  "car"
+  "car",
+  "ggspatial",
+  "caret",
+  "FactoMineR",
+  "factoextra",
+  "ggrepel",
+  "rstatix"
 )
 
 # Loading packages
@@ -915,4 +921,29 @@ vp_average_replicate_dataframe <- function(data,
   }
   
   return(AVG_dataframe_with_timepoints)
+}
+
+# Plotting Functions ####
+
+#### Custom Palettes ####
+custom_color_palette_stations <- c(
+  "1" = "#1f77b4", "2" = "#ff7f0e", "3" = "#008b45",
+  "4" = "#bb0021", "5" = "#9467bd", "6" = "#8c564b",
+  "7" = "#fb6467", "8" = "#2ca02c", "9" = "#efc000",
+  "10" = "#17becf", "11" = "#24325f", "12.1" = "#075149",
+  "12.2" = "#7e6148"
+)
+custom_color_palette_cruise <- c(
+  "PE477" = "#0c1844", "PE486" = "#850000",
+  `Autumn (Sept 2020)` = "#0c1844", `Spring (Apr 2021)` = "#850000"
+)
+custom_shape_palette_depths<- c(
+  "7" = 19,
+  "15" = 17,
+  "30" = 15
+)
+
+# Adjusting labels ####
+adjust_label_position <- function(value, to_multiply = 1, to_add) {
+  ifelse(value > 0, (value * to_multiply) + to_add, (value * to_multiply) - to_add)  
 }

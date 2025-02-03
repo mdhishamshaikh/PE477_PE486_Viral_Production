@@ -87,6 +87,7 @@ stations_plot<- ggplot() +
   #geom_point(data = stations, aes(x = Longitude, y = Latitude))+
   geom_text(data = stations, aes(x = Longitude, y = Latitude, label = Station_Number), 
             color = "black", size = 5, nudge_y = -0.15, nudge_x = -0.1, check_overlap = F) + 
+  # geom_text_repel(data = stations, aes(label = Station_Number), size = 3, box.padding = 0.3, max.overlaps = 100) +
   #scale_colour_gradientn(colours = (ODV_colours)) +
   # coord_cartesian(expand = F)+
  # facet_grid(~ Location) +

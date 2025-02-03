@@ -69,7 +69,7 @@ cor_plot<- ggplot(data = melted_cor_matrix, aes(x = Var1, y = Var2, fill = value
   scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
                        midpoint = 0, limit = c(-1, 1), space = "Lab", 
                        name="Pearson\nCorrelation") +
-  theme_minimal() + 
+  theme_minimal(base_size = 15) + 
   theme(axis.text.x = element_text(angle = 90, vjust = 1, 
                                    size = 10, hjust = 1)) +
   coord_fixed() +
