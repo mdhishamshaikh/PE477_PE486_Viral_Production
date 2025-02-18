@@ -63,13 +63,13 @@ stations_plot<- ggplot() +
       "#0D47A1",     # Deeper royal blue (-60 m)
       "#0B408A",     # Darker blue (-70 m)
       # "#093974",     # Navy blue (-80 m)
-      "#082E63",     # Deep navy blue (-90 m)
+       #"#082E63",     # Deep navy blue (-90 m)
       # "#061D4F",     # Indigo blue (-100 m)
       "#04143D",     # Very dark indigo (-125 m)
       # "#030C2C",     # Almost black blue (-150 m)
       # "#020822",     # Very deep blue (-175 m)
-      "#010417",     # Deepest blue (-200 m)
-      "black"        # Very dark blue/black (-250 m)
+      "#010417"     # Deepest blue (-200 m)
+     # "black"        # Very dark blue/black (-250 m)
     )),
     values = scales::rescale(c(0, -5, -10, -15, -20, -25, -30,
                                -35, -40, -45, -50
@@ -136,7 +136,7 @@ stations_plot<- ggplot() +
     plot.margin = margin(10, 10, 10, 20)
   )
 stations_plot
-ggsave(stations_plot, filename = "./figures/stations_plot_with_bathymetry.svg", width = 10, height =8, dpi = 800)
+ggsave(stations_plot, filename = "./figures/stations_plot_with_bathymetry.svg", width = 10, height =8, dpi = 800, units = "in")
 
 
 
@@ -151,7 +151,7 @@ map_data <- map_data("world")
 
 # Plot the map with bounding box
 map_plot <- ggplot() +
-  geom_polygon(data = map_data, aes(x = long, y = lat, group = group), fill = "grey50", color = "black") +
+  geom_polygon(data = map_data, aes(x = long, y = lat, group = group), fill = "grey30", color = "black") +
   geom_rect(data = bbox_europe, aes(xmin = xmin, xmax = xmax, ymin = ymin, ymax = ymax),
             fill = NA, color = "black", size = 1.2) +  # Bounding box
   coord_fixed(xlim = c(-10, 10), ylim = c(35, 65), expand = FALSE, ratio = 1.3) +
@@ -171,11 +171,11 @@ map_plot <- ggplot() +
        x = NULL,
        y = NULL)+
  
-  theme_bw(base_size = 15) +
+  theme_bw(base_size = 20) +
   theme(panel.grid = element_blank(),
         legend.title = element_text(size = 12, color = "black"),
         legend.text = element_text(size = 10, color = "black"),
         panel.border = element_rect( color = "black"))
 map_plot
-ggsave(map_plot, filename = "./figures/europe_map.svg", width = 10, height =8, dpi = 800)
+ggsave(map_plot, filename = "./figures/europe_map.svg", width = 4, height = 6 , dpi = 800, units = "in")
 

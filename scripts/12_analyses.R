@@ -8,7 +8,7 @@ pe_df <- read.csv("./results/PE477_PE486_3depths_combined.csv")
 
 # 2.0 Assigning vectors for parameters ####
 
-physicochemical_params <- c("Temperature", "Salinity", "Density", "Conductivity", 
+physicochemical_params <- c("Temperature", "Salinity", #"Density", "Conductivity", 
                             "Turbidity", "Nitrate", "Phosphate", "Silicate")
 
 biological_params <- c("Oxygen", "Fluorescence",
@@ -23,7 +23,7 @@ vp_params <- c("decay_rate_linear",
                # "Corrected_VP_SE_Lytic",
                # "Corrected_VP_SE_Lysogenic",
                "percent_bacterial_loss_day_burst_50",
-               "percent_lysogeny_burst_50")
+               "percent_lysogeny_day_burst_50")
 
 sample_params <- c("Location", "Station_Number", "Depth", 
                    "sample_tag", "Latitude", "Longitude",
@@ -32,17 +32,17 @@ sample_params <- c("Location", "Station_Number", "Depth",
 # 3.0 Correlation matrix for phsyicochemical parameters only####
 # To visualize correlations and remove highly correlated variables 
 
-correlation_df <- pe_df %>%
+correlation_pc_df <- pe_df %>%
   dplyr::select(all_of(physicochemical_params))
 
 # I chose "pairwise.complete.obs" to remove NAs on a pairwise basis for each variable pairs.
 
-cor_matrix <- cor(correlation_df, use = "pairwise.complete.obs", method = "pearson")
+cor_matrix_pc <- cor(correlation_pc_df, use = "pairwise.complete.obs", method = "pearson")
 
-melted_cor_matrix <- reshape2::melt(cor_matrix)
+melted_cor_matrix_pc <- reshape2::melt(cor_matrix_pc)
 
 # Plot the heatmap
-cor_plot<- ggplot(data = melted_cor_matrix, aes(x = Var1, y = Var2, fill = value)) +
+cor_plot_pc<- ggplot(data = melted_cor_matrix_pc, aes(x = Var1, y = Var2, fill = value)) +
   geom_tile() +
   scale_fill_gradient2(low = "#003049", high = "#DC2828", mid = "white", 
                        midpoint = 0, limit = c(-1, 1), space = "Lab", 
@@ -54,30 +54,30 @@ cor_plot<- ggplot(data = melted_cor_matrix, aes(x = Var1, y = Var2, fill = value
   labs(title = "Correlation plot: phsyical & chemical at 3 depths",
        x = NULL,
        y = NULL)
-cor_plot
+cor_plot_pc
 
-ggsave(plot = cor_plot, path = "./figures/", filename = "correlation_plot_physicochemical_PE_Cruises.svg", dpi = 800, width = 5, height = 5)
+ggsave(plot = cor_plot_pc, path = "./figures/", filename = "correlation_plot_physicochemical_PE_Cruises.svg", dpi = 800, width = 5, height = 5)
 
 
 # Finding highly correlates variable pairs
-highly_correlated_pairs <- melted_cor_matrix %>%
+highly_correlated_pairs_pc <- melted_cor_matrix_pc %>%
   dplyr::filter(abs(value) > 0.95 & Var1 != Var2) %>%
   arrange(desc(abs(value)))   
 
-print(highly_correlated_pairs)
+print(highly_correlated_pairs_pc)
 
 # Temperature, conductivity, and density are highly correlated at > 0.98. keeping only temperature.
 # Turbidity is also highly correlated with temperature, density, and conductivity at > 0.9, but will keep it for now.
 
-correlation_df_low_corr <- correlation_df %>%
+correlation_df_low_corr_pc <- correlation_pc_df %>%
   dplyr::select(-c("Density", "Conductivity"))
 
-cor_matrix_low_corr <- cor(correlation_df_low_corr, use = "pairwise.complete.obs", method = "pearson")
+cor_matrix_low_corr_pc <- cor(correlation_df_low_corr_pc, use = "pairwise.complete.obs", method = "pearson")
 
-melted_cor_matrix_low_corr <- reshape2::melt(cor_matrix_low_corr)
+melted_cor_matrix_low_corr_pc <- reshape2::melt(cor_matrix_low_corr_pc)
 
 # Plot the heatmap
-cor_plot_low_corr<- ggplot(data = melted_cor_matrix_low_corr, aes(x = Var1, y = Var2, fill = value)) +
+cor_plot_low_corr_pc<- ggplot(data = melted_cor_matrix_low_corr_pc, aes(x = Var1, y = Var2, fill = value)) +
   geom_tile() +
   scale_fill_gradient2(low = "#003049", high = "#DC2828", mid = "white", 
                        midpoint = 0, limit = c(-1, 1), space = "Lab", 
@@ -89,17 +89,17 @@ cor_plot_low_corr<- ggplot(data = melted_cor_matrix_low_corr, aes(x = Var1, y = 
   labs(title = "Correlation plot: phsyical & chemical at 3 depths (low corr)",
        x = NULL,
        y = NULL)
-cor_plot_low_corr
+cor_plot_low_corr_pc
 
-ggsave(plot = cor_plot_low_corr, path = "./figures/", filename = "correlation_plot_physicochemical_LOW_CORR_PE_Cruises.svg", dpi = 800, width = 5, height = 5)
+ggsave(plot = cor_plot_low_corr_pc, path = "./figures/", filename = "correlation_plot_physicochemical_LOW_CORR_PE_Cruises.svg", dpi = 800, width = 5, height = 5)
 
-correlation_df_low_corr_with_sample_labels <- cbind(pe_df %>% dplyr::select(all_of(sample_params)),
-                                                                            correlation_df_low_corr)
+correlation_df_low_corr_with_sample_labels_pc <- cbind(pe_df %>% dplyr::select(all_of(sample_params)),
+                                                                            correlation_df_low_corr_pc)
   
 
 # 4.0 PCA - low correlated - physicochemical parameters ####
 
-pca_pc_df <- correlation_df_low_corr_with_sample_labels %>%
+pca_pc_df <- correlation_df_low_corr_with_sample_labels_pc %>%
   na.omit()
 
 pca_pc_labels <- pca_pc_df %>%
@@ -509,6 +509,83 @@ print(kw_results_bio_3d)
 
 
 #### 6.0 Testing at 7m depth - PCA & boxplots####
+
+# PCA with all variables in #
+
+pca_pc_df_7m <- pe_df %>%
+  dplyr::filter(Depth == 7) 
+
+
+pca_pc_labels_7m <- pca_pc_df_7m %>%
+  dplyr::select(all_of(sample_params))
+
+pca_pc_numeric_df_7m <- pca_pc_df_7m %>%
+  dplyr::select(all_of(physicochemical_params)) %>%
+  scale()
+
+pca_pc_results_7m <- PCA(pca_pc_numeric_df_7m, scale.unit = T, graph = F)
+pca_pc_scores_7m <- as.data.frame(pca_pc_results_7m$ind$coord)
+pca_pc_df_final_7m <- cbind(pca_pc_labels_7m, pca_pc_scores_7m)
+
+# Visualizing PCA results
+explained_variance_pc_7m <- pca_pc_results_7m$eig %>%
+  as.data.frame() %>%
+  mutate(PC = row_number()) %>%
+  rename(Variance = `percentage of variance`)
+
+# Scree plot
+ggplot(explained_variance_pc_7m, aes(x = PC, y = Variance)) +
+  geom_bar(stat = "identity", fill = "steelblue", color = "black") +
+  geom_text(aes(label = round(Variance, 2)), vjust = -0.5, size = 4) +
+  scale_x_continuous(breaks = seq(1, nrow(explained_variance_pc_7m), 1)) +
+  theme_test() +
+  labs(title = "Scree Plot: PCA Explained Variance - 7m",
+       x = "Principal Component (PC)",
+       y = "Variance Explained (%)")
+
+
+# PCA biplot
+
+pca_pc_loadings_7m <- as.data.frame(pca_pc_results_7m$var$coord)
+pca_pc_loadings_7m$Variable <- row.names(pca_pc_loadings_7m)
+pca_pc_loadings_7m <- pca_pc_loadings_7m %>%
+  mutate(Label_X = adjust_label_position(Dim.1, 2, 0.2),  
+         Label_Y = adjust_label_position(Dim.2, 2, 0.2))
+
+
+pca_pc_7m<- ggplot(pca_pc_df_final_7m , aes(x = Dim.1, y = Dim.2, 
+                                            color = as.factor(Station_Number))) +  
+  stat_ellipse(aes(group = Season, fill = Season), geom = "polygon", alpha = 0.2, level = 0.95) +  
+  geom_point(aes(shape = as.factor(Depth)),size = 4, alpha = 0.8) +  
+  geom_text_repel(aes(label = Station_Number), color = "black", size = 5, box.padding = 0.3, max.overlaps = 100) + 
+  scale_color_manual(values = custom_color_palette_stations,
+                     guide = guide_legend(ncol = 2)) +
+  scale_fill_manual(values = custom_color_palette_cruise) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") +  
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +  
+  ggplot2::geom_segment(data = pca_pc_loadings_7m,
+                        aes(x = 0, y = 0, xend = Dim.1 * 2, yend = Dim.2 * 2),
+                        arrow = arrow(length = unit(0.2, "cm")),
+                        color = "black", linewidth = 1) +  
+  geom_text(data = pca_pc_loadings_7m,
+            aes(x = adjust_label_position(Dim.1, 2, 0.65), 
+                y = adjust_label_position(Dim.2, 2, 0.1), 
+                label = Variable),
+            size = 5, color = "black") +  
+  scale_shape_manual(values = custom_shape_palette_depths) +  
+  labs(
+    #title = "PCA Biplot - Physicochemical parameters - 3 depths",
+    x = "PC1 (52.19 %)",
+    y = "PC2 (30.87 %)",
+    color = "Station Number",
+    shape = "Depth",
+    fill = "Season") +
+  theme_test(base_size = 15) +
+  theme(legend.position = "right")
+pca_pc_7m
+
+ggsave(plot = pca_pc_7m, filename = "./figures/PCA_physicochemical_7m_correlated_not_removed.svg", dpi = 800, width = 10, height = 7)
+
 # Checking for correlation in 7 m physicochemical data ####
 
 correlation_7m_df <- pe_df %>%
@@ -577,6 +654,9 @@ correlation_7m_df_low_corr_with_sample_labels <- cbind(pe_df %>%
                                                          dplyr::filter(Depth == 7)%>% 
                                                          dplyr::select(all_of(sample_params)),
                                                     correlation_df_low_corr_7m)
+
+
+
 
 #### 6.1 Physicochemical paramters PCA ####
 
@@ -999,7 +1079,7 @@ vp_7m_df <- pe_df %>%
                names_to = "vp parameters",
                values_to = "Value") %>%
   dplyr::mutate(`vp parameters` = factor(`vp parameters`, levels = c( "Corrected_VP_Lytic", "Corrected_VP_Lysogenic", "decay_rate_linear", 
-                                                                      "percent_bacterial_loss_day_burst_50","percent_lysogeny_burst_50",
+                                                                      "percent_bacterial_loss_day_burst_50","percent_lysogeny_day_burst_50",
                                                                       "percent_decay_day_linear")))
 
 # Defining labels using parse-able expressions
@@ -1008,7 +1088,7 @@ vp_variable_labels <- c(
   "Corrected_VP_Lysogenic" = "Lysogenic~production~rate~(10^5~cells~mL^{-1}~h^{-1})",
   "decay_rate_linear" = "Viral~decay~rate~(10^3~cells~mL^{-1}~h^{-1})",
   "percent_bacterial_loss_day_burst_50" = "Bacteria~lysed~('%'~cells~d^{-1})",
-  "percent_lysogeny_burst_50" = "Lysogeny~('%'~cells~d^{-1})",
+  "percent_lysogeny_day_burst_50" = "Lysogeny~('%'~cells~d^{-1})",
   "percent_decay_day_linear" = "Viral~decay~('%'~VLPs~d^{-1})"
 )
 
@@ -1059,5 +1139,255 @@ kw_results_vp_7m <- vp_7m_df %>%
   )
 print(kw_results_vp_7m)
 
+
+# 7.0 PCA with physicochemical, biological, and VP variables at 7M. ####
+
+# Correlations at 7 m ####
+
+
+correlation_df <- pe_df %>%
+  dplyr::filter(Depth == 7) %>%
+  dplyr::select(all_of(c(physicochemical_params, biological_params, vp_params)))
+
+# I chose "pairwise.complete.obs" to remove NAs on a pairwise basis for each variable pairs.
+
+cor_matrix <- cor(correlation_df, use = "pairwise.complete.obs", method = "pearson")
+
+melted_cor_matrix <- reshape2::melt(cor_matrix)
+
+# Plot the heatmap
+cor_plot<- ggplot(data = melted_cor_matrix, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "#003049", high = "#DC2828", mid = "white", 
+                       midpoint = 0, limit = c(-1, 1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal(base_size = 15) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, 
+                                    hjust = 1)) +
+  coord_fixed() +
+  labs(title = "Correlation plot: phsyical, chemical, biological and VP at 7m",
+       x = NULL,
+       y = NULL)
+cor_plot
+
+ggsave(plot = cor_plot, path = "./figures/", filename = "correlation_plot_pc_bio_vp_7m_PE_Cruises.svg", dpi = 800, width = 10, height = 10)
+
+
+# Finding highly correlates variable pairs
+highly_correlated_pairs <- melted_cor_matrix %>%
+  dplyr::filter(abs(value) > 0.90 & Var1 != Var2) %>%
+  arrange(desc(abs(value)))   
+
+print(highly_correlated_pairs)
+
+# Temperature, conductivity, and density are highly correlated at > 0.98. keeping only temperature.
+# Turbidity is also highly correlated with temperature at = 0.95, but will keep it for now.
+# Total Viruses and V1 are correlated at > 0.99 and V2 and V1/Total Viruses are correlated at > 0.95
+# Total Bacteria and HNA are correlated at > 0.93, but LNA doesn't correlate well. 
+# I will do 2 PCAs. One with subgroups and one without. 
+
+correlation_df_main_groups <- correlation_df %>%
+  dplyr::select(-c("Density", "Conductivity",
+                   "HNA", "LNA", "Cyanobacteria",
+                   "V1", "V2", "V3",
+                   "decay_rate_linear",
+                   contains("Corrected")))
+
+cor_matrix_main_groups  <- cor(correlation_df_main_groups , use = "pairwise.complete.obs", method = "pearson")
+
+melted_cor_matrix_main_groups  <- reshape2::melt(cor_matrix_main_groups)
+
+# Plot the heatmap
+cor_plot_main_groups <- ggplot(data = melted_cor_matrix_main_groups , aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "#003049", high = "#DC2828", mid = "white", 
+                       midpoint = 0, limit = c(-1, 1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 1, 
+                                   size = 10, hjust = 1)) +
+  coord_fixed() +
+  labs(title = "Correlation plot: phsyical & chemical at 3 depths (low corr)",
+       x = NULL,
+       y = NULL)
+cor_plot_main_groups 
+
+ggsave(plot = cor_plot_main_groups , path = "./figures/", filename = "correlation_plot_physicochemical_main_groups_PE_Cruises.svg", dpi = 800, width = 5, height = 5)
+
+correlation_df_main_groups_with_sample_labels <- cbind(pe_df %>%
+                                                         dplyr::filter(Depth == 7) %>% 
+                                                         dplyr::select(all_of(sample_params)),
+                                                    correlation_df_main_groups )
+
+
+pca_df_7m_main_groups <- correlation_df_main_groups_with_sample_labels %>%
+  na.omit()
+
+pca_labels_7m_main_groups <- pca_df_7m_main_groups %>%
+  dplyr::select(all_of(sample_params))
+
+pca_numeric_df_7m_main_groups <- pca_df_7m_main_groups %>%
+  dplyr::select(-all_of(sample_params)) %>%
+  scale()
+
+# Performing PCA for all main parameters at 7m
+pca_results_7m_main_groups <- PCA(pca_numeric_df_7m_main_groups, scale.unit = T, graph = F)
+pca_scores_7m_main_groups <- as.data.frame(pca_results_7m_main_groups$ind$coord)
+pca_df_final_7m_main_groups <- cbind(pca_labels_7m_main_groups, pca_scores_7m_main_groups)
+
+# Visualizing PCA results
+explained_variance_7m_main_groups <- pca_results_7m_main_groups$eig %>%
+  as.data.frame() %>%
+  mutate(PC = row_number()) %>%
+  rename(Variance = `percentage of variance`)
+
+# Scree plot
+ggplot(explained_variance_7m_main_groups, aes(x = PC, y = Variance)) +
+  geom_bar(stat = "identity", fill = "steelblue", color = "black") +
+  geom_text(aes(label = round(Variance, 2)), vjust = -0.5, size = 4) +
+  scale_x_continuous(breaks = seq(1, nrow(explained_variance_pc_7m), 1)) +
+  theme_test() +
+  labs(title = "Scree Plot: PCA Explained Variance -Main groups - 7m",
+       x = "Principal Component (PC)",
+       y = "Variance Explained (%)")
+
+
+# PCA biplot
+
+pca_loadings_7m_main_groups <- as.data.frame(pca_results_7m_main_groups$var$coord)
+pca_loadings_7m_main_groups$Variable <- row.names(pca_loadings_7m_main_groups)
+pca_loadings_7m_main_groups <- pca_loadings_7m_main_groups %>%
+  mutate(Label_X = adjust_label_position(Dim.1, 3, 0.2),  
+         Label_Y = adjust_label_position(Dim.2, 3, 0.2))
+
+
+pca_7m_main_groups <- ggplot(pca_df_final_7m_main_groups , aes(x = Dim.1, y = Dim.2, 
+                                            color = as.factor(Station_Number))) +  
+  stat_ellipse(aes(group = Season, fill = Season), geom = "polygon", alpha = 0.2, level = 0.95) +  
+
+  scale_color_manual(values = custom_color_palette_stations,
+                     guide = guide_legend(ncol = 2)) +
+  scale_fill_manual(values = custom_color_palette_cruise) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") +  
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +  
+  ggplot2::geom_segment(data = pca_loadings_7m_main_groups,
+                        aes(x = 0, y = 0, xend = Dim.1 * 3, yend = Dim.2 * 3),
+                        arrow = arrow(length = unit(0.2, "cm")),
+                        color = "black", linewidth = 1) +  
+  geom_text(data = pca_loadings_7m_main_groups,
+            aes(x = adjust_label_position(Dim.1, 3, 0.65), 
+                y = adjust_label_position(Dim.2, 3, 0.1), 
+                label = Variable),
+            size = 5, color = "black") +  
+  geom_point(aes(shape = as.factor(Depth)),size = 4, alpha = 0.8) +  
+  geom_text_repel(aes(label = Station_Number), color = "black", size = 5, box.padding = 0.3, max.overlaps = 100) + 
+  scale_shape_manual(values = custom_shape_palette_depths) +  
+  labs(
+    #title = "PCA Biplot - All main parameters - 7m",
+    x = "PC1 (34.06 %)",
+    y = "PC2 (19.06 %)",
+    color = "Station Number",
+    shape = "Depth",
+    fill = "Season") +
+  theme_test(base_size = 15) +
+  theme(legend.position = "right")
+pca_7m_main_groups
+
+ggsave(plot = pca_7m_main_groups, filename = "./figures/PCA_all_main_parameters_7m.svg", dpi = 800, width = 10, height = 7)
+
+# With subgroups #####
+correlation_df_sub_groups <- correlation_df %>%
+  dplyr::select(-c("Density", "Conductivity",
+                   #"HNA", "LNA", "Cyanobacteria",
+                   #"V1", "V2", "V3",
+                   "decay_rate_linear",
+                   contains("Corrected")))
+
+correlation_df_sub_groups_with_sample_labels <- cbind(pe_df %>%
+                                                         dplyr::filter(Depth == 7) %>% 
+                                                         dplyr::select(all_of(sample_params)),
+                                                       correlation_df_sub_groups )
+
+
+pca_df_7m_sub_groups <- correlation_df_sub_groups_with_sample_labels %>%
+  na.omit()
+
+pca_labels_7m_sub_groups <- pca_df_7m_sub_groups %>%
+  dplyr::select(all_of(sample_params))
+
+pca_numeric_df_7m_sub_groups <- pca_df_7m_sub_groups %>%
+  dplyr::select(-all_of(sample_params)) %>%
+  scale()
+
+# Performing PCA for all sub parameters at 7m
+pca_results_7m_sub_groups <- PCA(pca_numeric_df_7m_sub_groups, scale.unit = T, graph = F)
+pca_scores_7m_sub_groups <- as.data.frame(pca_results_7m_sub_groups$ind$coord)
+pca_df_final_7m_sub_groups <- cbind(pca_labels_7m_sub_groups, pca_scores_7m_sub_groups)
+
+# Visualizing PCA results
+explained_variance_7m_sub_groups <- pca_results_7m_sub_groups$eig %>%
+  as.data.frame() %>%
+  mutate(PC = row_number()) %>%
+  rename(Variance = `percentage of variance`)
+
+# Scree plot
+ggplot(explained_variance_7m_sub_groups, aes(x = PC, y = Variance)) +
+  geom_bar(stat = "identity", fill = "steelblue", color = "black") +
+  geom_text(aes(label = round(Variance, 2)), vjust = -0.5, size = 4) +
+  scale_x_continuous(breaks = seq(1, nrow(explained_variance_pc_7m), 1)) +
+  theme_test() +
+  labs(title = "Scree Plot: PCA Explained Variance -sub groups - 7m",
+       x = "Principal Component (PC)",
+       y = "Variance Explained (%)")
+
+
+# PCA biplot
+
+pca_loadings_7m_sub_groups <- as.data.frame(pca_results_7m_sub_groups$var$coord)
+pca_loadings_7m_sub_groups$Variable <- row.names(pca_loadings_7m_sub_groups)
+pca_loadings_7m_sub_groups <- pca_loadings_7m_sub_groups %>%
+  mutate(Label_X = adjust_label_position(Dim.1, 3, 0.2),  
+         Label_Y = adjust_label_position(Dim.2, 3, 0.2))
+
+
+pca_7m_sub_groups <- ggplot(pca_df_final_7m_sub_groups , aes(x = Dim.1, y = Dim.2, 
+                                                               color = as.factor(Station_Number))) +  
+  stat_ellipse(aes(group = Season, fill = Season), geom = "polygon", alpha = 0.2, level = 0.95) +  
+  
+  scale_color_manual(values = custom_color_palette_stations,
+                     guide = guide_legend(ncol = 2)) +
+  scale_fill_manual(values = custom_color_palette_cruise) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") +  
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +  
+  ggplot2::geom_segment(data = pca_loadings_7m_sub_groups,
+                        aes(x = 0, y = 0, xend = Dim.1 * 4, yend = Dim.2 * 4),
+                        arrow = arrow(length = unit(0.2, "cm")),
+                        color = "black", linewidth = 1) +  
+  geom_text(data = pca_loadings_7m_sub_groups,
+            aes(x = adjust_label_position(Dim.1, 4, 0.65), 
+                y = adjust_label_position(Dim.2, 4, 0.1), 
+                label = Variable),
+            size = 5, color = "black") +  
+  geom_point(aes(shape = as.factor(Depth)),size = 4, alpha = 0.8) +  
+  geom_text_repel(aes(label = Station_Number), color = "black", size = 5, box.padding = 0.3, max.overlaps = 100) + 
+  scale_shape_manual(values = custom_shape_palette_depths) +  
+  labs(
+    #title = "PCA Biplot - All sub parameters - 7m",
+    x = "PC1 (37.51 %)",
+    y = "PC2 (17.51 %)",
+    color = "Station Number",
+    shape = "Depth",
+    fill = "Season") +
+  theme_test(base_size = 15) +
+  theme(legend.position = "right")
+pca_7m_sub_groups
+
+ggsave(plot = pca_7m_sub_groups, filename = "./figures/PCA_all_sub_parameters_7m.svg", dpi = 800, width = 10, height = 7)
+
+# Biological PCA
+
+
+
 #### 7.0 Linear regression models to explain lytic and lysogenic production rates ####
 #### 8.0 Dogger's Bank in PE486 ####
+# Group 9, 12.1, and 12.2 as Dogger bank stations and 7, 10, 11, 8 as non

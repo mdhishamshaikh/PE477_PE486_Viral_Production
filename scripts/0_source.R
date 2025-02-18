@@ -942,6 +942,10 @@ custom_shape_palette_depths<- c(
   "15" = 17,
   "30" = 15
 )
+custom_shape_palette_cruise <- c(
+  "PE477" = 1, "PE486" = 4,
+  `Autumn (Sept 2020)` = 1, `Spring (Apr 2021)` = 4
+)
 
 # Adjusting labels ####
 adjust_label_position <- function(value, to_multiply = 1, to_add) {

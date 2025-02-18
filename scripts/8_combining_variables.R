@@ -6,7 +6,7 @@ source("scripts/0_source.R")
 
 # 1.0 CTD profiles #
 # Here I will only work with CTD variables from 3 depths (7 m, 15 m and 30 m)
-# Variables: Salinity, temperature, pressure, density, conductivity, oxyge, turbidity, fluorescence
+# Variables: Salinity, temperature, pressure, density, conductivity, oxyge, turbidity, chlorophyll
 ctd <- read.csv("./results/ctd_profiles/ctd_variables_sampling_depths.csv") %>%
   dplyr::select(-c(Measured_depth, Distance, Location_Station_Number)) %>%
   dplyr::rename(Depth = Target_Depth) %>%
@@ -18,7 +18,8 @@ ctd <- read.csv("./results/ctd_profiles/ctd_variables_sampling_depths.csv") %>%
 # 2.0 Microbial abundances and nutrients ####
 
 abundance_nuts <- read.csv("./results/microbial_abundance_nutrients/microbial_abundance_nutrients.csv") %>%
-  dplyr::mutate(Depth = as.character(Depth)) %>%
+  dplyr::mutate(Depth = as.character(Depth),
+                HNALNA = HNA/LNA) %>%
   dplyr::filter(!(Location == "PE477" & Station_Number == 7) & 
                   !(Location == "PE486" & Station_Number == 8)) %>%
   distinct() # There were some duplicated rows
@@ -52,7 +53,8 @@ vp_corrected_for_bacterial_loss <- vp %>%
   mutate(Corrected_VP_Lytic = (VP_Lytic)*100/bac_efficiency, 
          Corrected_VP_Lysogenic = (VP_Lysogenic)*100/bac_efficiency,
          Corrected_VP_SE_Lytic = (VP_SE_Lytic)*100/bac_efficiency, 
-         Corrected_VP_SE_Lysogenic = (VP_SE_Lysogenic)*100/bac_efficiency) 
+         Corrected_VP_SE_Lysogenic = (VP_SE_Lysogenic)*100/bac_efficiency
+         ) 
 
 
 
@@ -61,7 +63,11 @@ vp_corrected_for_bacterial_loss <- vp %>%
 pe_df <-  ctd %>%
   left_join(abundance_nuts, by = c("Location", "Station_Number", "Depth")) %>%
   left_join(vp_corrected_for_bacterial_loss, by = c("Location", "Station_Number", "Depth")) %>%
-  dplyr::mutate(Location_Station = paste(Location, Station_Number, sep = "_"))
+  dplyr::mutate(Location_Station = paste(Location, Station_Number, sep = "_"),
+                Corrected_VP_Lytic_per_bacteria = Corrected_VP_Lytic/Total_Bacteria,
+                Corrected_VP_Lytic_SE_per_bacteria = Corrected_VP_Lytic/Total_Bacteria,
+                Corrected_VP_Lysogenic_per_bacteria = Corrected_VP_Lytic/Total_Bacteria,
+                Corrected_VP_Lysogenic_SE_per_bacteria = Corrected_VP_Lytic/Total_Bacteria)
 
 
 
@@ -117,8 +123,8 @@ for (b in burst_sizes) {
   pe_df <- pe_df %>%
     mutate(
       !!paste0("bacterial_loss_rate_burst_", b) := Corrected_VP_Lytic / b,
-      !!paste0("percent_bacterial_loss_day_burst_", b) := (Corrected_VP_Lytic / b * 24 * 100) / Total_Bacteria,
-      !!paste0("percent_lysogeny_burst_", b) := (Corrected_VP_Lysogenic * 100) / (b * Total_Bacteria)
+      !!paste0("percent_bacterial_loss_day_burst_", b) := (Corrected_VP_Lytic * 24 * 100) / (b * Total_Bacteria),
+      !!paste0("percent_lysogeny_day_burst_", b) := (Corrected_VP_Lysogenic * 24 * 100) / (b * Total_Bacteria)
     )
 }
 
@@ -172,7 +178,7 @@ ggplot(pe_df %>% dplyr::filter(Depth == 7), aes(x = factor(Station_Number), y = 
         strip.placement = "outside")
 
 
-ggplot(pe_df %>% dplyr::filter(Depth == 7), aes(x = factor(Station_Number), y = percent_lysogeny_burst_30 , fill = 'black')) +
+ggplot(pe_df %>% dplyr::filter(Depth == 7), aes(x = factor(Station_Number), y = percent_lysogeny_day_burst_30 , fill = 'black')) +
   geom_bar(stat = "identity", position = position_dodge(), width = 0.7, fill = 'black') +
   #labs(title = paste(var), x = "Station", y = "Value") +
   #facet_grid( ~ Location, scales = "fixed") +  

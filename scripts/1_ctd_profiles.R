@@ -68,7 +68,7 @@ combined_df <- combined_df %>%
     Conductivity = C0,
     Oxygen = sbeox0Mm.L,
     Turbidity = turb,
-    Fluorescence = flC
+    Chlorophyll = flC
   )
 
 # 3.0 Calculating density and removing surface values values ####
@@ -80,8 +80,15 @@ combined_df <- combined_df %>%
   dplyr::filter(Depth > 3) # Making sure first 3 meters are not considered as the disturbance from dropping the CTD frame creates large fluctuations in measurements.
 
 ctd_profiles<- combined_df %>%
-  dplyr::select(c("Original_station_cast", "Location_Station_Number", "Depth", "Salinity", "Temperature", "Pressure", "Density", "Conductivity", "Oxygen", "Turbidity", "Fluorescence")) %>%
+  dplyr::select(c("Original_station_cast", "Location_Station_Number", "Depth", "Salinity", "Temperature", "Pressure", "Density", "Conductivity", "Oxygen", "Turbidity", "Chlorophyll")) %>%
   separate(Location_Station_Number, c("Location", "Station_Number"), "_", remove = F)
+
+
+# Max depth
+ctd_profiles <- ctd_profiles %>%
+  group_by(Location_Station_Number) %>%
+  mutate(Max_Depth = max(Depth)) %>%
+  ungroup()
 
 # Writing output as a csv  
 write.csv(ctd_profiles, "./results/ctd_profiles/ctd_profiles.csv", row.names = F)
@@ -95,7 +102,7 @@ ctd_long_df <- ctd_profiles %>%
   reshape2::melt(id.vars = c("Original_station_cast", "Location_Station_Number", "Depth")) %>%  
   mutate(variable = factor(variable, levels = c(
     "Salinity", "Temperature", "Pressure", "Density", 
-    "Conductivity", "Oxygen", "Turbidity", "Fluorescence"
+    "Conductivity", "Oxygen", "Turbidity", "Chlorophyll"
   )))
 
 

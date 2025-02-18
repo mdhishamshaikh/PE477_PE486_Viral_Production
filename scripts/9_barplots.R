@@ -11,7 +11,7 @@ station_variables <- c("Location", "Station_Number", "Depth", "sample_tag", "Loc
 
 # 2.0 Plotting variables that have information at 3 depths ####
 
-variables_3_depths <- c("Salinity", "Temperature", "Density", "Conductivity", "Turbidity", "Oxygen", "Fluorescence",
+variables_3_depths <- c("Salinity", "Temperature", "Density", "Conductivity", "Turbidity", "Oxygen", "Chlorophyll",
                         "Total_Bacteria", "HNA", "LNA", "Cyanobacteria",
                         "Total_Viruses", "V1", "V2", "V3",
                         "VBR",
@@ -68,13 +68,13 @@ for (i in seq_along(plots)) {
 # 3.0 Plots for 7 m depth ####
 
 
-variables_7m <- c("Salinity", "Temperature", "Density", "Conductivity", "Turbidity", "Oxygen", "Fluorescence",
+variables_7m <- c("Salinity", "Temperature", "Density", "Conductivity", "Turbidity", "Oxygen", "Chlorophyll",
                         "Total_Bacteria", "HNA", "LNA", "Cyanobacteria",
                         "Total_Viruses", "V1", "V2", "V3",
                         "VBR",
                         "Nitrate", "Nitrite", "Phosphate", "Silicate",
-                  "Corrected_VP_Lytic", "Corrected_VP_Lysogenic", "percent_decay_day_linear",
-                  "viral_turnover_time", "percent_bacterial_loss_day_burst_30", "percent_lysogeny_burst_30")
+                  "Corrected_VP_Lytic", "Corrected_VP_Lysogenic", "decay_rate_linear", "percent_decay_day_linear",
+                  "viral_turnover_time", "percent_bacterial_loss_day_burst_30", "percent_lysogeny_day_burst_30")
 
 
 pe_df_long_7m <- pe_df%>%
