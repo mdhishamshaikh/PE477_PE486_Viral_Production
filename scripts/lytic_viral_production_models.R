@@ -547,7 +547,10 @@ summary_unweighted <- summary(vbr_lytic_poly)
 summary_weighted <- summary(vbr_lytic_weighted_poly)
 summary_robust <- summary(vbr_lytic_robust_poly)
 summary_weighted_robust <- summary(vbr_lytic_weighted_robust_poly)
-
+summary_unweighted
+summary_weighted
+summary_robust
+summary_weighted_robust
 # Compare AIC values
 AIC(vbr_lytic_poly, vbr_lytic_weighted_poly, vbr_lytic_robust_poly, vbr_lytic_weighted_robust_poly)
 
@@ -611,4 +614,180 @@ confint(vbr_lytic_weighted_poly)
 confint(vbr_lytic_robust_poly)  
 confint(vbr_lytic_weighted_robust_poly)  
 
+# 10.0 Facet plots for lytic viral pproduction WLS ####
+
+
+long_lytic_df <- lytic_df %>%
+  pivot_longer(cols = c(Total_Bacteria, HNA, LNA, Total_Viruses, V1, V2),
+               names_to = "Predictor",
+               values_to = "Predictor_Value") %>%
+  dplyr::mutate(Predictor = factor(Predictor, levels = c("Total_Bacteria","HNA", "LNA",
+                                                         "Total_Viruses", "V1", "V2"))) 
+long_lytic_df <- long_lytic_df %>%
+  group_by(Predictor) %>%
+  mutate(
+    # Fit an initial OLS model per predictor
+    ols_model = list(lm(Corrected_VP_Lytic ~ Predictor_Value, data = cur_data())),
+    
+    # Extract residuals from the OLS model
+    residuals_ols = abs(residuals(ols_model[[1]])) + 0.1,  # Adding small constant to avoid zero division
+    
+    # Compute weights as inverse of residuals
+    weights = 1 / residuals_ols
+  ) %>%
+  ungroup() %>%
+  dplyr::select(-ols_model, -residuals_ols)  # Remove intermediate columns
+
+# Check if weights were added successfully
+glimpse(long_lytic_df)
+
+# Generate faceted WLS plot
+lytic_wls_plot<- ggplot(long_lytic_df, aes(x = Predictor_Value, y = Corrected_VP_Lytic, shape = Season, fill = weights)) +
+  # WLS Regression (Single Line per Facet)
+  geom_smooth(method = "lm", formula = y ~ x, color = NA, se = T, size = 1, 
+              aes(weight = weights, group = 1)) +
+  
+  geom_point(size = 3, stroke = 0.8, color = "black") +  # Ensures points have a black border
+  scale_shape_manual(values = c(21, 24)) +  # Circle (21) & Triangle (24) for season
+  scale_fill_viridis_c(option = "magma", direction = -1, name = "Weight") +  # Shared weight color scale
+  
+  # WLS Regression (Single Line per Facet)
+  geom_smooth(method = "lm", formula = y ~ x, color = "black", se = F, size = 1, 
+              aes(weight = weights, group = 1)) +
+  
+  # Facet by predictor variable
+  facet_wrap(~ Predictor, scales = "free_x", strip.position = "bottom",
+             labeller = as_labeller(variable_labels, label_parsed)) +  
+  
+  # Labels (no title)
+  labs(x = NULL, 
+       y = expression("Lytic viral production rate " ~ (10^{5} ~ viruses ~ mL^{-1} ~ h^{-1})), 
+       fill = "Weight") +
+  
+  # Theme adjustments for clean, publication-ready visuals
+  theme_test(base_size = 15) +
+  theme(legend.position = "right",
+       panel.spacing.y = unit(0.5, "cm"),
+      #panel.spacing.x = unit(0.2, "cm"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+      panel.border = element_rect(linewidth = 1.5),
+        axis.line = element_line(size = 0), 
+      axis.text = element_text(color = "black"),
+        strip.background = element_blank(),
+        strip.placement = "outside", 
+      strip.switch.pad.wrap = unit(-0.1, "cm"),
+      strip.text = element_text(color = "black"),
+      aspect.ratio = 1)
+lytic_wls_plot
+
+ggsave(plot = lytic_wls_plot, filename = "./figures/lytic_WLS_bacteria_viruses.svg", dpi = 1000, width = 11, height = 7)
+
+# WLS results ####
+library(dplyr)
+library(broom)
+
+# Function to fit WLS for each predictor and extract model stats
+wls_results <- long_lytic_df %>%
+  group_by(Predictor) %>%
+  group_modify(~ {
+    # Fit Weighted Least Squares model
+    wls_model <- lm(Corrected_VP_Lytic ~ Predictor_Value, data = .x, weights = .x$weights)
+    
+    # Extract model summary
+    summary_wls <- summary(wls_model)
+    
+    # Store important results
+    tibble(
+      Intercept = coef(wls_model)[1],
+      Estimate = coef(wls_model)[2],
+      Std.Error = summary_wls$coefficients[2, 2],
+      t_value = summary_wls$coefficients[2, 3],
+      p_value = summary_wls$coefficients[2, 4],
+      Adj_R2 = summary_wls$adj.r.squared,
+      AIC = AIC(wls_model),
+      n = nrow(.x)
+    )
+  })
+
+# View results
+print(wls_results)
+
+write.csv(wls_results, "./results/stats/lytic_production_rate_WLS_bacteria_viruses.csv", row.names = F)
+
+
+# 11. VBR Lytic production non-linear plot and results ####
+# Compute weights for VBR using OLS residuals
+vbr_lytic_df <- lytic_df %>%
+  mutate(
+    # Fit initial OLS model for VBR
+    ols_model = list(lm(Corrected_VP_Lytic ~ VBR, data = .)),
+    
+    # Extract absolute residuals + small constant
+    residuals_ols = abs(residuals(ols_model[[1]])) + 0.1, 
+    
+    # Compute weights as inverse of residuals
+    weights = 1 / residuals_ols
+  ) %>%
+  dplyr::select(-ols_model, -residuals_ols)  # Remove intermediate columns
+
+# Generate Weighted Regression Plot for VBR
+vbr_wls_plot <- ggplot(vbr_lytic_df, aes(x = VBR, y = Corrected_VP_Lytic, shape = Season, fill = weights)) +
+  # Weighted Robust Regression (Best Overall)
+  geom_smooth(method = "rlm", formula = y ~ poly(x, 2), color = NA, se = T, 
+              aes(weight = weights, group = 1), size = 1.2) +
+  
+  geom_point(size = 3,  stroke = 0.8, color = "black") +  # Circle points with black border
+  scale_shape_manual(values = c(21, 24)) +  
+  scale_fill_viridis_c(option = "magma", direction = -1, name = "Weight") +  # Shared color scale
+  
+  # Weighted Regression (Best LM)
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), color = "#850000", se = F, 
+              aes(weight = weights, group = 1), size = 1.2) +
+  
+  # Weighted Robust Regression (Best Overall)
+  geom_smooth(method = "rlm", formula = y ~ poly(x, 2), color = "#0c1844", se = F, 
+              aes(weight = weights, group = 1), size = 1.2) +
+  
+  # Legend for selected models
+  annotate("text", x = 50, y = 9, 
+           label = "Weighted", color = "#850000", hjust = 1, size = 5) +
+  annotate("text", x = 50 , y = 8.5, 
+           label = "Weighted Robust", color = "#0c1844", hjust = 1, size = 5) +
+  
+  # Labels and theme
+  labs(x = "VBR", 
+       y = expression("Lytic viral production rate " ~ (10^{5} ~ viruses ~ mL^{-1} ~ h^{-1})), 
+       fill = "Weight") +
+  
+  theme_classic(base_size = 15) +
+  theme(legend.position = "right",
+        panel.border = element_rect(linewidth = 1.5, fill = NA),
+        axis.line = element_line(size = 0), 
+        axis.text = element_text(color = "black"),
+        aspect.ratio = 1)
+
+# Display the plot
+vbr_wls_plot
+# Save the plot
+ggsave(plot = vbr_wls_plot, filename = "./figures/lytic_WLS_vbr.svg", dpi = 1000, width = 8, height = 7)
+
+
+
+
+
+final_poly_table <- data.frame(
+  Model = c("Unweighted", "Weighted", "Robust", "Weighted Robust"),
+  Quadratic_Term = c(-4.250, -3.552, -3.349, -3.129),
+  Std_Error = c(1.902, 1.190, 1.360, 1.179),
+  CI_Lower = c(-8.552, -6.244, -6.016, -5.441),
+  CI_Upper = c(0.052, -0.860, -0.683, -0.816),
+  Adj_R2 = c(0.238, 0.474, NA, NA),
+  AIC = c(54.03, 43.23, 54.46, 41.67),
+  p_value = c(0.0523, 0.0153, NA, NA)  # NA for RLM models
+)
+
+# View table
+final_poly_table
+write.csv(final_poly_table, "./results/stats/lytic_production_rate_polynomial_VBR.csv", row.names = F)
 

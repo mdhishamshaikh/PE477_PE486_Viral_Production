@@ -943,11 +943,44 @@ custom_shape_palette_depths<- c(
   "30" = 15
 )
 custom_shape_palette_cruise <- c(
-  "PE477" = 1, "PE486" = 4,
-  `Autumn (Sept 2020)` = 1, `Spring (Apr 2021)` = 4
+  "PE477" = 19, "PE486" = 17,
+  `Autumn (Sept 2020)` = 19, `Spring (Apr 2021)` = 17
 )
 
 # Adjusting labels ####
 adjust_label_position <- function(value, to_multiply = 1, to_add) {
   ifelse(value > 0, (value * to_multiply) + to_add, (value * to_multiply) - to_add)  
 }
+
+# Variable labels ####
+variable_labels <- c(
+  "Temperature" = "Temperature~(degree*C)",
+  "Salinity" = "Salinity~(PSU)",
+  "Turbidity" = "Turbidity~(NTU)",
+  "Conductivity" = "Conductivity~(mS/cm)",
+  "Density" = "Density~(kg/m^3)", 
+  "Max_Depth" = "Max~Depth~(m)",
+  "Nitrate" = "Nitrate~(mu*M)",
+  "Phosphate" = "Phosphate~(mu*M)",
+  "Silicate" = "Silicate~(mu*M)",
+  "Total_Bacteria" = "Total~bacteria~(10^6~cells~mL^{-1})",
+  "Total_Viruses" = "Total~viruses~(10^6~viruses~mL^{-1})",
+  "VBR" = "VBR",
+  "HNALNA" = "HNALNA",
+  "Oxygen" = "Oxygen~(mu*M)",  
+  "Chlorophyll" = "Chlorophyll~(mu*g~L^{-1})",
+  "HNA" = "HNA~bacteria~(10^6~cells~mL^{-1})",
+  "LNA" = "LNA~bacteria~(10^6~cells~mL^{-1})",
+  "Cyanobacteria" = "Cyanobacteria~(10^3~cells~mL^{-1})",
+  "V1" = "V1~viruses~(10^6~viruses~mL^{-1})",
+  "V2" = "V2~viruses~(10^6~viruses~mL^{-1})",
+  "V3" = "V3~viruses~(10^6~viruses~mL^{-1})",
+  "Corrected_VP_Lytic" = "Lytic~production~rate~(10^5~cells~mL^{-1}~h^{-1})",
+  "Corrected_VP_Lysogenic" = "Lysogenic~production~rate~(10^5~cells~mL^{-1}~h^{-1})",
+  "Corrected_VP_Lytic_per_bacteria" = "Normalized~lytic~production~rate~(h^{-1})",
+  "Corrected_VP_Lysogenic_per_bacteria" = "Normalized~lysogenic~production~rate~(~h^{-1})",
+  "decay_rate_linear" = "Viral~decay~rate~(10^3~cells~mL^{-1}~h^{-1})",
+  "percent_bacterial_loss_day_burst_50" = "Bacteria~lysed~('%'~cells~d^{-1})",
+  "percent_lysogeny_day_burst_50" = "Lysogeny~('%'~cells~d^{-1})",
+  "percent_decay_day_linear" = "Viral~decay~('%'~viruses~d^{-1})"
+)

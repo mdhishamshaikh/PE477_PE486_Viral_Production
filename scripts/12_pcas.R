@@ -14,7 +14,7 @@ physicochemical_params <- c("Temperature", "Salinity", #"Density", "Conductivity
                             "Turbidity", "Nitrate", "Phosphate", "Silicate")
 
 biological_params <- c(#"Oxygen", 
-                       "Chlorophyll",
+                       "Chlorophyll", "Total_phyto",
                        "Total_Bacteria", "HNA", "LNA", "Cyanobacteria",
                        "Total_Viruses", "V1", "V2", "V3",
                        "VBR")
@@ -107,7 +107,7 @@ pca_pc_3d <- ggplot(pca_pc_df_final_3d , aes(x = Dim.1, y = Dim.2,
   theme(legend.position = "right")
 pca_pc_3d
 
-ggsave(plot = pca_pc_3d, filename = "./figures/PCA_physicochemical_3depths.svg", dpi = 800, width = 10, height = 7)
+ggsave(plot = pca_pc_3d, filename = "./figures/PCA_physicochemical_3depths.svg", dpi = 800, width = 10, height = 7, unit = "cm")
 
 
 
@@ -545,19 +545,19 @@ pca_bio_7m <- ggplot(pca_bio_df_final_7m , aes(x = Dim.1, y = Dim.2,
   geom_hline(yintercept = 0, linetype = "dashed", color = "black") +  
   geom_vline(xintercept = 0, linetype = "dashed", color = "black") +  
   ggplot2::geom_segment(data = pca_bio_loadings_7m,
-                        aes(x = 0, y = 0, xend = Dim.1 * 2, yend = Dim.2 * 2),
+                        aes(x = 0, y = 0, xend = Dim.1 * 4, yend = Dim.2 * 4),
                         arrow = arrow(length = unit(0.2, "cm")),
                         color = "black", linewidth = 1) +  
   geom_text(data = pca_bio_loadings_7m,
-            aes(x = adjust_label_position(Dim.1, 2, 0.65), 
-                y = adjust_label_position(Dim.2, 2, 0.1), 
+            aes(x = adjust_label_position(Dim.1, 4, 0.65), 
+                y = adjust_label_position(Dim.2, 4, 0.1), 
                 label = Variable),
             size = 5, color = "black") +  
   scale_shape_manual(values = custom_shape_palette_depths) +  
   labs(
     #title = "PCA Biplot - biological parameters - 7m",
-    x = "PC1 (52.99 %)",
-    y = "PC2 (24.23 %)",
+    x = "PC1 (53.09 %)",
+    y = "PC2 (22.25 %)",
     color = "Station Number",
     shape = "Depth",
     fill = "Season") +
@@ -774,19 +774,19 @@ pca_bio_3d <- ggplot(pca_bio_df_final_3d , aes(x = Dim.1, y = Dim.2,
   geom_hline(yintercept = 0, linetype = "dashed", color = "black") +  
   geom_vline(xintercept = 0, linetype = "dashed", color = "black") +  
   ggplot2::geom_segment(data = pca_bio_loadings_3d,
-                        aes(x = 0, y = 0, xend = Dim.1 * 2, yend = Dim.2 * 2),
+                        aes(x = 0, y = 0, xend = Dim.1 * 4, yend = Dim.2 * 4),
                         arrow = arrow(length = unit(0.2, "cm")),
                         color = "black", linewidth = 1) +  
   geom_text(data = pca_bio_loadings_3d,
-            aes(x = adjust_label_position(Dim.1, 2, 0.65), 
-                y = adjust_label_position(Dim.2, 2, 0.1), 
+            aes(x = adjust_label_position(Dim.1, 4, 0.65), 
+                y = adjust_label_position(Dim.2, 4, 0.1), 
                 label = Variable),
             size = 5, color = "black") +  
   scale_shape_manual(values = custom_shape_palette_depths) +  
   labs(
     #title = "PCA Biplot - biological parameters - 3 depths",
-    x = "PC1 (51.95 %)",
-    y = "PC2 (24.84 %)",
+    x = "PC1 (51.71 %)",
+    y = "PC2 (22.92 %)",
     color = "Station Number",
     shape = "Depth",
     fill = "Season") +
